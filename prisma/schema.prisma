@@ -1,0 +1,556 @@
+// Prisma schema for Lexora
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
+}
+
+enum UserRole {
+  GUEST
+  USER
+  ORG_ADMIN
+  LEGAL_REVIEWER
+  ADMIN
+}
+
+enum ContentStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum SubscriptionPlan {
+  FREE
+  PREMIUM_PERSONAL
+  UMKM
+  INSTITUTION
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PAST_DUE
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum ChecklistStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum IncidentStatus {
+  REPORTED
+  INVESTIGATING
+  CONTAINED
+  RESOLVED
+  CLOSED
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TargetAudience {
+  PUBLIC
+  UMKM
+  INSTITUTION
+  ALL
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  image         String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  memberships         Membership[]
+  subscription        Subscription?
+  chatSessions        ChatSession[]
+  checklistInstances  ChecklistInstance[]
+  generatedDocuments  GeneratedDocument[]
+  incidents           Incident[]
+  learningProgress    LearningProgress[]
+  auditLogs           AuditLog[]
+  reviewedRegulations DocTemplate[]       @relation("ReviewedDocTemplates")
+  regulationsReviewed Regulation[]        @relation("ReviewedRegulations")
+  checklistsReviewed  ChecklistTemplate[] @relation("ReviewedChecklists")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  type      String   @default("UMKM")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           OrgRole  @default(MEMBER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("memberships")
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String             @unique
+  plan      SubscriptionPlan   @default(FREE)
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Regulation {
+  id           String        @id @default(cuid())
+  title        String
+  code         String        @unique
+  category     String
+  year         Int
+  description  String?       @db.Text
+  sourceUrl    String?
+  status       ContentStatus @default(DRAFT)
+  publishedAt  DateTime?
+  reviewedById String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  reviewer User?               @relation("ReviewedRegulations", fields: [reviewedById], references: [id], onDelete: SetNull)
+  articles RegulationArticle[]
+
+  @@index([status])
+  @@index([category, year])
+  @@map("regulations")
+}
+
+model RegulationArticle {
+  id            String   @id @default(cuid())
+  regulationId  String
+  chapter       String?
+  articleNumber String
+  title         String?
+  content       String   @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  regulation     Regulation      @relation(fields: [regulationId], references: [id], onDelete: Cascade)
+  chunks         ArticleChunk[]
+  citations      Citation[]
+  checklistItems ChecklistItem[]
+
+  @@unique([regulationId, articleNumber])
+  @@index([articleNumber])
+  @@map("regulation_articles")
+}
+
+model ArticleChunk {
+  id         String                       @id @default(cuid())
+  articleId  String
+  chunkIndex Int
+  content    String                       @db.Text
+  embedding  Unsupported("vector(1536)")?
+  metadata   Json?
+  createdAt  DateTime                     @default(now())
+  updatedAt  DateTime                     @updatedAt
+
+  article RegulationArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@map("article_chunks")
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String?
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([userId])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  sessionId  String
+  role       ChatRole @default(USER)
+  content    String   @db.Text
+  disclaimer Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  citations Citation[]
+
+  @@index([sessionId])
+  @@map("chat_messages")
+}
+
+model Citation {
+  id             String   @id @default(cuid())
+  messageId      String
+  articleId      String
+  quote          String?  @db.Text
+  citationNumber Int?
+  createdAt      DateTime @default(now())
+
+  message ChatMessage       @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  article RegulationArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([articleId])
+  @@map("citations")
+}
+
+model ChecklistTemplate {
+  id             String        @id @default(cuid())
+  title          String
+  description    String?       @db.Text
+  incidentTypeId String?
+  status         ContentStatus @default(DRAFT)
+  reviewedById   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  incidentType IncidentType?       @relation(fields: [incidentTypeId], references: [id], onDelete: SetNull)
+  reviewer     User?               @relation("ReviewedChecklists", fields: [reviewedById], references: [id], onDelete: SetNull)
+  items        ChecklistItem[]
+  instances    ChecklistInstance[]
+
+  @@map("checklist_templates")
+}
+
+model ChecklistItem {
+  id            String   @id @default(cuid())
+  templateId    String
+  order         Int      @default(0)
+  title         String
+  description   String?  @db.Text
+  articleId     String?
+  docTemplateId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  template    ChecklistTemplate   @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  article     RegulationArticle?  @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  docTemplate DocTemplate?        @relation(fields: [docTemplateId], references: [id], onDelete: SetNull)
+  progresses  ChecklistProgress[]
+
+  @@index([templateId, order])
+  @@map("checklist_items")
+}
+
+model ChecklistInstance {
+  id         String          @id @default(cuid())
+  userId     String
+  templateId String
+  title      String
+  status     ChecklistStatus @default(NOT_STARTED)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template      ChecklistTemplate   @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  progressItems ChecklistProgress[]
+
+  @@index([userId])
+  @@map("checklist_instances")
+}
+
+model ChecklistProgress {
+  id          String    @id @default(cuid())
+  instanceId  String
+  itemId      String
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  instance ChecklistInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  item     ChecklistItem     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([instanceId, itemId])
+  @@map("checklist_progress")
+}
+
+model DocTemplate {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  description     String?       @db.Text
+  contentTemplate String        @db.Text
+  formSchema      Json
+  status          ContentStatus @default(DRAFT)
+  reviewedById    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  reviewer           User?               @relation("ReviewedDocTemplates", fields: [reviewedById], references: [id], onDelete: SetNull)
+  checklistItems     ChecklistItem[]
+  generatedDocuments GeneratedDocument[]
+
+  @@map("doc_templates")
+}
+
+model GeneratedDocument {
+  id               String   @id @default(cuid())
+  userId           String
+  templateId       String
+  title            String
+  formData         Json
+  generatedContent String?  @db.Text
+  fileUrl          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template DocTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("generated_documents")
+}
+
+model IncidentType {
+  id                   String   @id @default(cuid())
+  name                 String   @unique
+  slug                 String   @unique
+  description          String?  @db.Text
+  defaultDeadlineHours Int      @default(72)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  incidents             Incident[]
+  recommendedChecklists ChecklistTemplate[]
+
+  @@map("incident_types")
+}
+
+model Incident {
+  id             String           @id @default(cuid())
+  userId         String
+  incidentTypeId String
+  title          String
+  description    String           @db.Text
+  reportedAt     DateTime         @default(now())
+  deadlineAt     DateTime?
+  status         IncidentStatus   @default(REPORTED)
+  severity       IncidentSeverity @default(HIGH)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incidentType IncidentType    @relation(fields: [incidentTypeId], references: [id], onDelete: Cascade)
+  events       IncidentEvent[]
+  reminders    Reminder[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("incidents")
+}
+
+model IncidentEvent {
+  id          String   @id @default(cuid())
+  incidentId  String
+  title       String
+  description String?  @db.Text
+  eventType   String
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@map("incident_events")
+}
+
+model Reminder {
+  id           String    @id @default(cuid())
+  incidentId   String
+  scheduledAt  DateTime
+  reminderType String
+  isSent       Boolean   @default(false)
+  sentAt       DateTime?
+  message      String?   @db.Text
+  createdAt    DateTime  @default(now())
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@index([scheduledAt, isSent])
+  @@map("reminders")
+}
+
+model Course {
+  id             String         @id @default(cuid())
+  title          String
+  slug           String         @unique
+  description    String?        @db.Text
+  targetAudience TargetAudience @default(ALL)
+  status         ContentStatus  @default(DRAFT)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  lessons Lesson[]
+
+  @@map("courses")
+}
+
+model Lesson {
+  id              String   @id @default(cuid())
+  courseId        String
+  title           String
+  order           Int      @default(0)
+  content         String   @db.Text
+  durationMinutes Int      @default(10)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  course     Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quizzes    Quiz[]
+  progresses LearningProgress[]
+
+  @@index([courseId, order])
+  @@map("lessons")
+}
+
+model Quiz {
+  id            String   @id @default(cuid())
+  lessonId      String
+  question      String   @db.Text
+  options       Json
+  correctAnswer String
+  explanation   String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@map("quizzes")
+}
+
+model LearningProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  isCompleted Boolean   @default(false)
+  score       Int?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("learning_progress")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
