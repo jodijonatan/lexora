@@ -1,0 +1,1 @@
+import {Suspense} from 'react';import {SectionPage} from '@/components/section-page';export default function Page(){return <Suspense fallback={<div className="container section">Memuat…</div>}><SectionPage kind="register"/></Suspense>}

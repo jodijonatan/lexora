@@ -26,8 +26,10 @@ export const educationRepository = {
   },
 
   async findCourseById(id: string) {
-    return db.course.findUnique({
-      where: { id },
+    return db.course.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
       include: {
         lessons: {
           orderBy: { order: 'asc' },

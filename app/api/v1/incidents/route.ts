@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     if (!session?.user?.id) throw new UnauthorizedError()
 
     const { page, limit, skip } = parsePagination(req.nextUrl.searchParams)
-    const { incidents, total } = await incidentsService.list(session.user.id, skip, limit)
+    const { incidents, total } = await incidentsService.list(session.user.id, skip, limit, session.user.role)
 
     return ok(incidents, buildMeta(total, page, limit))
   } catch (err) {

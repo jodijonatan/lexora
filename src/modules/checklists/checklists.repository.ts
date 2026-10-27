@@ -21,8 +21,14 @@ export const checklistsRepository = {
   },
 
   async findTemplateById(id: string) {
-    return db.checklistTemplate.findUnique({
-      where: { id },
+    const clean = id.replace(/-/g, ' ')
+    return db.checklistTemplate.findFirst({
+      where: {
+        OR: [
+          { id },
+          { title: { contains: clean, mode: 'insensitive' } },
+        ],
+      },
       include: {
         items: {
           orderBy: { order: 'asc' },

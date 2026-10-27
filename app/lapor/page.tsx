@@ -1,0 +1,1 @@
+import {Suspense} from 'react';import LaporWizard from '@/components/pages/report-wizard';export default function Page(){return <Suspense fallback={<div className="container section">Memuat formulir…</div>}><LaporWizard/></Suspense>}

@@ -1,0 +1,3 @@
+export type ChannelRoute={channelId:string;alasan:string;siapkan:string[];urutan:number};
+const routes:Record<string,string[]>={fraud:['bank','iasc','patroli','spkt','komdigi','ojk'],investment:['bank','iasc','patroli','spkt','ojk'],marketplace:['bank','iasc','patroli','spkt'],hacked:['patroli','konten'],phishing:['bank','komdigi','patroli'],sextortion:['sapa','patroli','konten','spkt'],breach:['bssn','patroli'],ransomware:['bssn','patroli']};
+export function getRoutes(typeId:string){return (routes[typeId]||['patroli','spkt']).map((channelId,i)=>({channelId,alasan:i===0?'Langkah awal yang disarankan untuk jenis kejadian ini.':'Langkah lanjutan sesuai kebutuhan kasus.',siapkan:['Kronologi','Bukti yang tersedia'],urutan:i+1}));}

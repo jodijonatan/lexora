@@ -25,8 +25,10 @@ export const templatesRepository = {
   },
 
   async findById(id: string) {
-    return db.docTemplate.findUnique({
-      where: { id },
+    return db.docTemplate.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
       select: {
         id: true,
         title: true,

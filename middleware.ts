@@ -1,12 +1,11 @@
-import { auth } from '@/lib/auth'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-const PROTECTED_PREFIXES = ['/dashboard', '/asisten', '/checklist', '/dokumen', '/insiden', '/account', '/settings']
+const PROTECTED_PREFIXES = ['/dashboard', '/asisten', '/checklist', '/dokumen', '/insiden', '/profil']
 const ADMIN_PREFIXES = ['/admin']
 const AUTH_ONLY_ROUTES = ['/login', '/register']
 
-export default auth((req) => {
-  const { nextUrl, auth: session } = req
+export function middleware(req: NextRequest) {
+  const { nextUrl } = req
   const pathname = nextUrl.pathname
 
   const requestHeaders = new Headers(req.headers)
@@ -23,18 +22,28 @@ export default auth((req) => {
     [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https:",
-      "font-src 'self'",
+      "font-src 'self' https://fonts.gstatic.com data:",
       "connect-src 'self' https:",
       "frame-ancestors 'none'",
     ].join('; '),
   )
 
-  const isLoggedIn = !!session?.user
+  const rawSession = req.cookies.get('lexora_session')?.value
+  const authjsToken = req.cookies.get('authjs.session-token')?.value || req.cookies.get('__Secure-authjs.session-token')?.value
+
+  let role = ''
+  if (rawSession) {
+    try {
+      role = JSON.parse(decodeURIComponent(rawSession)).role ?? ''
+    } catch {}
+  }
+
+  const isLoggedIn = !!authjsToken || !!rawSession
 
   if (isLoggedIn && AUTH_ONLY_ROUTES.some((r) => pathname.startsWith(r))) {
-    return NextResponse.redirect(new URL('/dashboard', nextUrl))
+    return NextResponse.redirect(new URL(role === 'ADMIN' || role === 'LEGAL_REVIEWER' ? '/admin' : '/dashboard', nextUrl))
   }
 
   if (ADMIN_PREFIXES.some((p) => pathname.startsWith(p))) {
@@ -43,13 +52,12 @@ export default auth((req) => {
       loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    const role = (session?.user as { role?: string })?.role
-    if (role !== 'ADMIN' && role !== 'LEGAL_REVIEWER') {
-      return NextResponse.redirect(new URL('/dashboard', nextUrl))
+    if (role && role !== 'ADMIN' && role !== 'LEGAL_REVIEWER') {
+      return NextResponse.redirect(new URL('/403', nextUrl))
     }
   }
 
-  if (PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))) {
+  if (PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     if (!isLoggedIn) {
       const loginUrl = new URL('/login', nextUrl)
       loginUrl.searchParams.set('callbackUrl', pathname)
@@ -58,7 +66,7 @@ export default auth((req) => {
   }
 
   return response
-})
+}
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],

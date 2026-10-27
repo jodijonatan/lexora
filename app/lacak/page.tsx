@@ -1,0 +1,1 @@
+import {Suspense} from 'react';import Tracker from '@/components/pages/tracker';export default function Page(){return <Suspense fallback={<div className="container section">Memuat pelacakan…</div>}><Tracker/></Suspense>}

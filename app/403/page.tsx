@@ -1,0 +1,1 @@
+import Link from 'next/link';export default function Page(){return <div className="container section"><div className="label">403 · AKSES TERBATAS</div><h1 className="section-title">Kamu tidak memiliki akses ke halaman ini.</h1><p className="muted">Gunakan akun demo dengan peran yang sesuai.</p><Link href="/login" className="btn">Kembali ke masuk</Link></div>}

@@ -1,0 +1,1 @@
+export default function Loading(){return <div className="container section" aria-live="polite"><div className="label">LEXORA</div><div className="panel" style={{marginTop:20}}><div className="meter"><span className="on"/><span/><span/><span/><span/></div><p className="muted">Memuat halaman…</p></div></div>}
