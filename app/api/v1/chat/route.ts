@@ -4,8 +4,6 @@ import { ok, created, handleError, parsePagination, buildMeta } from '@/lib/api-
 import { checkRateLimit } from '@/lib/rate-limit'
 import { chatService, chatSchema } from '@/src/modules/chat/chat.service'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()

@@ -4,8 +4,6 @@ import { ok, created, handleError, parsePagination, buildMeta } from '@/lib/api-
 import { incidentsService, createIncidentSchema } from '@/src/modules/incidents/incidents.service'
 import { UnauthorizedError } from '@/lib/errors'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()

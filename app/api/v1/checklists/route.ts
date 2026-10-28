@@ -4,8 +4,6 @@ import { ok, created, handleError, parsePagination, buildMeta } from '@/lib/api-
 import { checklistsService, createChecklistSchema } from '@/src/modules/checklists/checklists.service'
 import { UnauthorizedError } from '@/lib/errors'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()

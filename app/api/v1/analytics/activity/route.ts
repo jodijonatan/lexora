@@ -5,8 +5,6 @@ import { analyticsService } from '@/src/modules/analytics/analytics.service'
 import { UnauthorizedError } from '@/lib/errors'
 import type { UserRole } from '@prisma/client'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()

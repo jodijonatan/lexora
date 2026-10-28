@@ -4,8 +4,6 @@ import { ok, handleError, parsePagination, buildMeta } from '@/lib/api-response'
 import { templatesService } from '@/src/modules/templates/templates.service'
 import { UnauthorizedError } from '@/lib/errors'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()
