@@ -4,8 +4,6 @@ import { ok, created, handleError, parsePagination, buildMeta } from '@/lib/api-
 import { regulationsService, createRegulationSchema } from '@/src/modules/regulations/regulations.service'
 import type { UserRole } from '@prisma/client'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()

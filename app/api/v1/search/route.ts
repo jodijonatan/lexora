@@ -3,8 +3,6 @@ import { ok, handleError } from '@/lib/api-response'
 import { regulationsService } from '@/src/modules/regulations/regulations.service'
 import { ValidationError } from '@/lib/errors'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   try {
     const q = req.nextUrl.searchParams.get('q')
