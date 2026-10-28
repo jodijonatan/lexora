@@ -32,10 +32,11 @@ export const incidentsRepository = {
     })
   },
 
-  async findByUser(userId: string, skip: number, take: number) {
+  async findByUser(userId?: string, skip: number = 0, take: number = 20) {
+    const where = userId ? { userId } : {}
     const [incidents, total] = await Promise.all([
       db.incident.findMany({
-        where: { userId },
+        where,
         skip,
         take,
         orderBy: { reportedAt: 'desc' },
@@ -44,14 +45,15 @@ export const incidentsRepository = {
           _count: { select: { events: true } },
         },
       }),
-      db.incident.count({ where: { userId } }),
+      db.incident.count({ where }),
     ])
     return { incidents, total }
   },
 
-  async findById(id: string, userId: string) {
+  async findById(id: string, userId?: string) {
+    const where = userId ? { id, userId } : { id }
     return db.incident.findFirst({
-      where: { id, userId },
+      where,
       include: {
         incidentType: {
           include: {

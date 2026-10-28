@@ -1,0 +1,1 @@
+'use client';import {usePathname} from 'next/navigation';import {SectionPage} from '@/components/section-page';export default function Page(){const p=usePathname();return <SectionPage kind={p.split('/').at(-1)?.startsWith('g-')?'checklist-detail':'insiden-detail'} detail/>}

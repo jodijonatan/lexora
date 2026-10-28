@@ -1,17 +1,20 @@
 import { analyticsRepository } from './analytics.repository'
-import { ForbiddenError } from '@/lib/errors'
 import type { UserRole } from '@prisma/client'
-
-const ADMIN_ROLES: UserRole[] = ['ADMIN']
 
 export const analyticsService = {
   async getSummary(actorRole: UserRole) {
-    if (!ADMIN_ROLES.includes(actorRole)) throw new ForbiddenError()
-    return analyticsRepository.getSummary()
+    const summary = await analyticsRepository.getSummary()
+    // Non-admin users get the full summary but user metrics are omitted
+    if (actorRole !== 'ADMIN') {
+      const rest = { ...summary }
+      delete (rest as Partial<typeof summary>).users
+      return rest
+    }
+    return summary
   },
 
   async getRecentActivity(actorRole: UserRole, limit = 10) {
-    if (!ADMIN_ROLES.includes(actorRole)) throw new ForbiddenError()
+    if (actorRole !== 'ADMIN') return []
     return analyticsRepository.getRecentActivity(limit)
   },
 }

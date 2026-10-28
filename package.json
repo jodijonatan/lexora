@@ -7,8 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
@@ -25,13 +27,20 @@
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
     "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
+    "lucide-react": "^1.61.0",
+    "motion": "^14.6.0",
     "next": "16.4.2",
     "next-auth": "^5.0.0-beta.32",
     "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-hook-form": "^7.91.0",
     "resend": "^6.34.1",
-    "zod": "^4.6.7"
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.7",
+    "zustand": "^5.0.16"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -44,6 +53,8 @@
     "prisma": "^7.10.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   }
 }

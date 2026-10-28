@@ -49,7 +49,7 @@ export const regulationsRepository = {
   },
 
   async findById(id: string) {
-    return db.regulation.findUnique({
+    const direct = await db.regulation.findUnique({
       where: { id },
       include: {
         articles: {
@@ -65,6 +65,32 @@ export const regulationsRepository = {
         reviewer: { select: { name: true } },
       },
     })
+    if (direct) return direct
+
+    const clean = id.toLowerCase().replace(/[^a-z0-9]/g, ' ')
+    const words = clean.split(/\s+/).filter((w) => w.length > 1)
+    const all = await db.regulation.findMany({
+      include: {
+        articles: {
+          orderBy: { articleNumber: 'asc' },
+          select: {
+            id: true,
+            chapter: true,
+            articleNumber: true,
+            title: true,
+            content: true,
+          },
+        },
+        reviewer: { select: { name: true } },
+      },
+    })
+
+    return (
+      all.find((r) => {
+        const target = (r.code + ' ' + r.title + ' ' + r.id).toLowerCase()
+        return words.filter((w) => target.includes(w)).length >= 2
+      }) ?? null
+    )
   },
 
   async create(data: {

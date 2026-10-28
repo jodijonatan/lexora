@@ -2,7 +2,7 @@ import { type NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { ok, handleError } from '@/lib/api-response'
 import { incidentsService } from '@/src/modules/incidents/incidents.service'
-import { UnauthorizedError, ValidationError } from '@/lib/errors'
+import { UnauthorizedError } from '@/lib/errors'
 import { z } from 'zod'
 
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
     if (!session?.user?.id) throw new UnauthorizedError()
 
     const { id } = await params
-    const incident = await incidentsService.getById(id, session.user.id)
+    const incident = await incidentsService.getById(id, session.user.id, session.user.role)
 
     return ok(incident)
   } catch (err) {
@@ -38,7 +38,7 @@ export async function PATCH(
       .parse(body)
 
     const { id } = await params
-    const incident = await incidentsService.updateStatus(id, session.user.id, status)
+    const incident = await incidentsService.updateStatus(id, session.user.id, status, session.user.role)
 
     return ok(incident)
   } catch (err) {

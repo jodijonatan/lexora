@@ -22,7 +22,7 @@ const credentialsSchema = z.object({
   password: z.string().min(8),
 })
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const { handlers, auth: baseAuth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
   pages: { signIn: '/login', error: '/login' },
@@ -86,6 +86,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 })
+
+export { handlers, signIn, signOut }
+
+export const auth = baseAuth
 
 export async function requireAuth() {
   const session = await auth()

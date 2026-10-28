@@ -74,21 +74,24 @@ export const incidentsService = {
     return incident
   },
 
-  async list(userId: string, skip: number, take: number) {
-    return incidentsRepository.findByUser(userId, skip, take)
+  async list(userId: string, skip: number, take: number, role?: string) {
+    const isAdminOrReviewer = role === 'ADMIN' || role === 'LEGAL_REVIEWER'
+    return incidentsRepository.findByUser(isAdminOrReviewer ? undefined : userId, skip, take)
   },
 
-  async getById(incidentId: string, userId: string) {
-    const incident = await incidentsRepository.findById(incidentId, userId)
+  async getById(incidentId: string, userId: string, role?: string) {
+    const isAdminOrReviewer = role === 'ADMIN' || role === 'LEGAL_REVIEWER'
+    const incident = await incidentsRepository.findById(incidentId, isAdminOrReviewer ? undefined : userId)
     if (!incident) throw new NotFoundError('Insiden')
-    if (incident.userId !== userId) throw new ForbiddenError()
+    if (!isAdminOrReviewer && incident.userId !== userId) throw new ForbiddenError()
     return incident
   },
 
-  async updateStatus(incidentId: string, userId: string, status: string) {
-    const incident = await incidentsRepository.findById(incidentId, userId)
+  async updateStatus(incidentId: string, userId: string, status: string, role?: string) {
+    const isAdminOrReviewer = role === 'ADMIN' || role === 'LEGAL_REVIEWER'
+    const incident = await incidentsRepository.findById(incidentId, isAdminOrReviewer ? undefined : userId)
     if (!incident) throw new NotFoundError('Insiden')
-    if (incident.userId !== userId) throw new ForbiddenError()
+    if (!isAdminOrReviewer && incident.userId !== userId) throw new ForbiddenError()
 
     const updated = await incidentsRepository.updateStatus(
       incidentId,
@@ -108,10 +111,12 @@ export const incidentsService = {
     incidentId: string,
     userId: string,
     input: z.infer<typeof createReminderSchema>,
+    role?: string,
   ) {
-    const incident = await incidentsRepository.findById(incidentId, userId)
+    const isAdminOrReviewer = role === 'ADMIN' || role === 'LEGAL_REVIEWER'
+    const incident = await incidentsRepository.findById(incidentId, isAdminOrReviewer ? undefined : userId)
     if (!incident) throw new NotFoundError('Insiden')
-    if (incident.userId !== userId) throw new ForbiddenError()
+    if (!isAdminOrReviewer && incident.userId !== userId) throw new ForbiddenError()
 
     return incidentsRepository.createReminder({
       incidentId,

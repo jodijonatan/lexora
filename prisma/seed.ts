@@ -2,30 +2,34 @@ import { db } from '../lib/db'
 import {
   UserRole,
   ContentStatus,
-  IncidentSeverity,
   TargetAudience,
 } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 async function main() {
   console.log('🌱 Memulai proses seeding database Lexora...')
 
+  const defaultPasswordHash = await bcrypt.hash('Lexora123!', 12)
+
   // 1. Seed Roles & Users
-  const adminUser = await db.user.upsert({
+  await db.user.upsert({
     where: { email: 'admin@lexora.id' },
-    update: {},
+    update: { passwordHash: defaultPasswordHash },
     create: {
       name: 'Administrator Lexora',
       email: 'admin@lexora.id',
+      passwordHash: defaultPasswordHash,
       role: UserRole.ADMIN,
     },
   })
 
   const legalReviewer = await db.user.upsert({
     where: { email: 'reviewer@lexora.id' },
-    update: {},
+    update: { passwordHash: defaultPasswordHash },
     create: {
       name: 'Dr. Hukum Siber, S.H., LL.M.',
       email: 'reviewer@lexora.id',
+      passwordHash: defaultPasswordHash,
       role: UserRole.LEGAL_REVIEWER,
     },
   })
@@ -185,7 +189,7 @@ Demikian pemberitahuan resmi ini kami sampaikan sesuai dengan kewajiban hukum ya
   console.log('✅ Template dokumen berhasil dibuat.')
 
   // 5. Seed Checklist Template
-  const checklistBreach = await db.checklistTemplate.create({
+  await db.checklistTemplate.create({
     data: {
       title: 'Checklist Respons Cepat Kebocoran Data Pribadi (UU PDP)',
       description:

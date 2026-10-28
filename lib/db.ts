@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined
 }
 
-const connectionString = process.env.DATABASE_URL
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/lexora?sslmode=disable'
 
 const pool =
   globalForPrisma.pool ??

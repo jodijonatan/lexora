@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server'
-import { ok, created, handleError } from '@/lib/api-response'
+import { created, handleError } from '@/lib/api-response'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { usersService, registerSchema } from '@/src/modules/users/users.service'
 
