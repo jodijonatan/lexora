@@ -4,12 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, Save, Eye, EyeOff, ShieldCheck, Copy, CheckCircle2, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, Eye, EyeOff, ShieldCheck, Copy, CheckCircle2 } from 'lucide-react';
 import { incidentTypes } from '@/data/channels';
 import { useCases, CaseRecord } from '@/store/cases';
 import { triage, completeness } from '@/lib/triage';
 import { PageHead, Meter, PrototypeNotice } from '@/components/ui';
 import { api } from '@/lib/api-client';
+import { createCaseId, generateSecurePin } from '@/lib/case-id';
 
 const steps = [
   'Keselamatan',
@@ -51,18 +52,21 @@ export default function Lapor() {
   const [draftNotice, setDraftNotice] = useState(false);
 
   useEffect(() => {
-    try {
-      const d = localStorage.getItem('lexora-draft');
-      if (d) {
-        setDraftNotice(true);
-        const v = JSON.parse(d);
-        setTypeId(v.typeId || typeId);
-        setWhat(v.what || '');
-        setDidNext(v.didNext || '');
-        setAfter(v.after || '');
-        setOccurredAt(v.occurredAt || '');
-      }
-    } catch {}
+    const timer = setTimeout(() => {
+      try {
+        const d = localStorage.getItem('lexora-draft');
+        if (d) {
+          const v = JSON.parse(d);
+          setTypeId((curr) => v.typeId || curr);
+          setWhat(v.what || '');
+          setDidNext(v.didNext || '');
+          setAfter(v.after || '');
+          setOccurredAt(v.occurredAt || '');
+          setDraftNotice(true);
+        }
+      } catch {}
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -116,8 +120,8 @@ export default function Lapor() {
 
   function submit() {
     if (!canSend) return;
-    const id = `LXR-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-    const pin = String(Math.floor(100000 + Math.random() * 900000));
+    const id = createCaseId();
+    const pin = generateSecurePin();
     const c: CaseRecord = {
       id,
       pin,

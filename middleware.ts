@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 const PROTECTED_PREFIXES = ['/dashboard', '/asisten', '/checklist', '/dokumen', '/insiden', '/profil']
 const ADMIN_PREFIXES = ['/admin']
 const AUTH_ONLY_ROUTES = ['/login', '/register']
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { nextUrl } = req
   const pathname = nextUrl.pathname
 
@@ -17,6 +18,9 @@ export function middleware(req: NextRequest) {
   response.headers.set('X-XSS-Protection', '1; mode=block')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+  }
   response.headers.set(
     'Content-Security-Policy',
     [
@@ -30,17 +34,16 @@ export function middleware(req: NextRequest) {
     ].join('; '),
   )
 
-  const rawSession = req.cookies.get('lexora_session')?.value
-  const authjsToken = req.cookies.get('authjs.session-token')?.value || req.cookies.get('__Secure-authjs.session-token')?.value
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+    cookieName: req.cookies.has('__Secure-authjs.session-token')
+      ? '__Secure-authjs.session-token'
+      : 'authjs.session-token',
+  })
 
-  let role = ''
-  if (rawSession) {
-    try {
-      role = JSON.parse(decodeURIComponent(rawSession)).role ?? ''
-    } catch {}
-  }
-
-  const isLoggedIn = !!authjsToken || !!rawSession
+  const isLoggedIn = !!token
+  const role = (token?.role as string) || ''
 
   if (isLoggedIn && AUTH_ONLY_ROUTES.some((r) => pathname.startsWith(r))) {
     return NextResponse.redirect(new URL(role === 'ADMIN' || role === 'LEGAL_REVIEWER' ? '/admin' : '/dashboard', nextUrl))
@@ -52,7 +55,7 @@ export function middleware(req: NextRequest) {
       loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    if (role && role !== 'ADMIN' && role !== 'LEGAL_REVIEWER') {
+    if (role !== 'ADMIN' && role !== 'LEGAL_REVIEWER') {
       return NextResponse.redirect(new URL('/403', nextUrl))
     }
   }

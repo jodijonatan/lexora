@@ -2,7 +2,7 @@ import { type NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { ok, handleError } from '@/lib/api-response'
 import { incidentsService } from '@/src/modules/incidents/incidents.service'
-import { UnauthorizedError, ValidationError } from '@/lib/errors'
+import { UnauthorizedError } from '@/lib/errors'
 import { z } from 'zod'
 
 export async function GET(

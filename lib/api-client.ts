@@ -158,6 +158,14 @@ export interface AnalyticsSummary {
   usersCount?: number;
 }
 
+export interface ActivityLogItem {
+  id: string;
+  action: string;
+  createdAt: string;
+  user?: { name?: string | null; email?: string | null } | null;
+  details?: Record<string, unknown> | null;
+}
+
 async function fetcher<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = endpoint.startsWith('http') ? endpoint : `/api/v1${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
   const res = await fetch(url, {
@@ -283,7 +291,7 @@ export const api = {
   },
 
   getActivityLog: async (days: number = 30) => {
-    return fetcher<any[]>(`/analytics/activity?days=${days}`);
+    return fetcher<ActivityLogItem[]>(`/analytics/activity?days=${days}`);
   },
 
   // User Profile
@@ -292,7 +300,7 @@ export const api = {
   },
 
   updateProfile: async (data: { name?: string }) => {
-    return fetcher<any>('/users/me', {
+    return fetcher<{ id: string; name: string; email: string; role: string }>('/users/me', {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -300,6 +308,6 @@ export const api = {
 
   // Pencarian Cerdas
   searchRegulations: async (q: string) => {
-    return fetcher<any[]>(`/search?q=${encodeURIComponent(q)}`);
+    return fetcher<Record<string, unknown>[]>(`/search?q=${encodeURIComponent(q)}`);
   },
 };

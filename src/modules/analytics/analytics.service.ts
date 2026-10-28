@@ -6,7 +6,8 @@ export const analyticsService = {
     const summary = await analyticsRepository.getSummary()
     // Non-admin users get the full summary but user metrics are omitted
     if (actorRole !== 'ADMIN') {
-      const { users: _users, ...rest } = summary
+      const rest = { ...summary }
+      delete (rest as Partial<typeof summary>).users
       return rest
     }
     return summary

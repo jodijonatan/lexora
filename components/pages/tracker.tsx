@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Search, Copy, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Search, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { PageHead, PrototypeNotice } from '@/components/ui';
 import { useCases } from '@/store/cases';
 
@@ -20,7 +20,6 @@ export default function Lacak() {
   const [tries, setTries] = useState(0);
   const [show, setShow] = useState(false);
   const [reply, setReply] = useState('');
-  const [extra, setExtra] = useState('');
 
   function search() {
     if (tries >= 5) {
@@ -90,17 +89,7 @@ export default function Lacak() {
             )}
 
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.85rem' }} className="muted">
-              Coba akun demo:&nbsp;
-              <button
-                type="button"
-                style={{ background: 'transparent', border: 'none', color: '#00E5FF', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                onClick={() => {
-                  setId('LXR-2026-000142');
-                  setPin('482913');
-                }}
-              >
-                Gunakan ID <code>LXR-2026-000142</code> / PIN <code>482913</code>
-              </button>
+              Belum memiliki Case ID? Daftarkan laporan baru melalui formulir <Link href="/lapor" style={{ color: '#00E5FF' }}>Mulai Lapor</Link>.
             </div>
           </div>
 

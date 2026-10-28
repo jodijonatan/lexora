@@ -89,45 +89,7 @@ const { handlers, auth: baseAuth, signIn, signOut } = NextAuth({
 
 export { handlers, signIn, signOut }
 
-export const auth: typeof baseAuth = (async (...args: any[]) => {
-  try {
-    const session = await (baseAuth as any)(...args)
-    if (session?.user?.id) return session
-  } catch {}
-
-  try {
-    let raw: string | undefined
-    if (args[0] && typeof (args[0] as any).cookies?.get === 'function') {
-      raw = (args[0] as any).cookies.get('lexora_session')?.value
-    }
-    if (!raw) {
-      const { cookies } = await import('next/headers')
-      const cookieStore = await cookies()
-      raw = cookieStore.get('lexora_session')?.value
-    }
-    if (raw) {
-      const parsed = JSON.parse(decodeURIComponent(raw))
-      const userEmail = parsed.email || 'admin@lexora.id'
-      const dbUser = await db.user.findFirst({
-        where: { OR: [{ email: userEmail }, { role: (parsed.role as UserRole) || 'ADMIN' }] },
-        select: { id: true, name: true, email: true, role: true },
-      })
-      const userId = dbUser?.id || 'cmvq5nh490000qqi02izzfbe7'
-      const role = (dbUser?.role || parsed.role || 'USER') as UserRole
-      return {
-        user: {
-          id: userId,
-          name: dbUser?.name || parsed.name || 'User',
-          email: dbUser?.email || userEmail,
-          role,
-        },
-        expires: new Date(Date.now() + 86400000).toISOString(),
-      } as any
-    }
-  } catch {}
-
-  return null
-}) as any
+export const auth = baseAuth
 
 export async function requireAuth() {
   const session = await auth()

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Search,
   ExternalLink,
   BookOpen,
   CheckSquare,
@@ -14,13 +13,9 @@ import {
   Printer,
   Copy,
   CheckCircle2,
-  AlertTriangle,
   ArrowRight,
   Bot,
   Sparkles,
-  HelpCircle,
-  Shield,
-  Layers,
   GraduationCap,
 } from 'lucide-react';
 import { PageHead, Card, Meter } from '@/components/ui';
@@ -33,16 +28,12 @@ import {
   DocTemplate,
   Course,
   Incident,
+  AnalyticsSummary,
+  ActivityLogItem,
 } from '@/lib/api-client';
+import { signIn as nextAuthSignIn, signOut as nextAuthSignOut } from 'next-auth/react';
 
-const account = [
-  { email: 'admin@lexora.id', name: 'Admin Lexora', role: 'ADMIN' },
-  { email: 'reviewer@lexora.id', name: 'Dr. Hukum Siber, S.H., LL.M.', role: 'LEGAL_REVIEWER' },
-  { email: 'budi@lexora.id', name: 'Budi Santoso', role: 'USER' },
-  { email: 'rani@lexora.id', name: 'Rani Pertiwi', role: 'USER' },
-];
-
-export function SectionPage({ kind, detail = false }: { kind: string; detail?: boolean }) {
+export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
   const path = usePathname();
   const router = useRouter();
   const cases = useCases((s) => s.cases);
@@ -52,13 +43,17 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
   // States
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('Kasus Saya');
-  const [email, setEmail] = useState('admin@lexora.id');
-  const [password, setPassword] = useState('Lexora123!');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const [message, setMessage] = useState('');
   const [reply, setReply] = useState('');
   const [chosen, setChosen] = useState(cases[0]?.id || '');
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [aiCitation, setAiCitation] = useState<string | null>(null);
+  const [now] = useState(() => Date.now());
 
   // Backend Live Data States
   const [regulations, setRegulations] = useState<Regulation[]>([]);
@@ -70,10 +65,10 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
   const [activeChecklist, setActiveChecklist] = useState<ChecklistTemplate | null>(null);
   const [activeDocTemplate, setActiveDocTemplate] = useState<DocTemplate | null>(null);
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [activeIncident, setActiveIncident] = useState<Incident | null>(null);
   const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; role: string; createdAt: string } | null>(null);
-  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Checklist state
@@ -84,17 +79,12 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
   const [generatedDoc, setGeneratedDoc] = useState<{ title: string; content: string } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Quiz state
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
-  const [submittedQuiz, setSubmittedQuiz] = useState<Record<string, boolean>>({});
-
   // Determine active item from path slug
   const pathSlug = decodeURIComponent(path.split('/').filter(Boolean).at(-1) || '');
 
   // Fetch real data from backend API
   useEffect(() => {
     let active = true;
-    setIsLoading(true);
 
     async function loadBackendData() {
       try {
@@ -213,25 +203,85 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
     try {
       const res = await api.generateDocument(templateId, docFormData);
       setGeneratedDoc(res);
-    } catch (err: any) {
-      alert(err.message || 'Gagal menyusun dokumen.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal menyusun dokumen.';
+      alert(msg);
     } finally {
       setIsGenerating(false);
     }
   }
 
-  function signIn() {
-    const u = account.find((a) => a.email === email);
-    if (!u) {
-      setMessage('Email tidak terdaftar.');
+  async function handleSignIn(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    if (!email || !password) {
+      setMessage('Silakan isi email dan kata sandi.');
       return;
     }
+    setIsSigningIn(true);
+    setMessage('');
     try {
-      localStorage.setItem('lexora-user', JSON.stringify(u));
-      document.cookie = `lexora_session=${encodeURIComponent(JSON.stringify({ id: u.email, role: u.role, name: u.name, email: u.email }))}; path=/; samesite=lax`;
-    } catch {}
-    const next = new URLSearchParams(window.location.search).get('callbackUrl') || new URLSearchParams(window.location.search).get('next');
-    router.push(next && next.startsWith('/') ? next : u.role === 'ADMIN' || u.role === 'LEGAL_REVIEWER' ? '/admin' : '/dashboard');
+      const res = await nextAuthSignIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+      if (res?.error) {
+        setMessage('Email atau kata sandi tidak sesuai.');
+      } else {
+        const next = new URLSearchParams(window.location.search).get('callbackUrl') || new URLSearchParams(window.location.search).get('next');
+        router.push(next && next.startsWith('/') ? next : '/dashboard');
+        router.refresh();
+      }
+    } catch {
+      setMessage('Terjadi kesalahan saat memproses otentikasi.');
+    } finally {
+      setIsSigningIn(false);
+    }
+  }
+
+  async function handleRegister(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    if (!name || !email || !password) {
+      setMessage('Semua kolom wajib diisi.');
+      return;
+    }
+    if (password.length < 8) {
+      setMessage('Kata sandi minimal 8 karakter.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setMessage('Konfirmasi kata sandi tidak cocok.');
+      return;
+    }
+    setIsSigningIn(true);
+    setMessage('');
+    try {
+      const res = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage(data?.error?.message || 'Gagal melakukan pendaftaran.');
+      } else {
+        const loginRes = await nextAuthSignIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        });
+        if (loginRes?.error) {
+          router.push('/login?registered=1');
+        } else {
+          router.push('/dashboard');
+          router.refresh();
+        }
+      }
+    } catch {
+      setMessage('Terjadi kesalahan koneksi server.');
+    } finally {
+      setIsSigningIn(false);
+    }
   }
 
   function renderDocumentPreview(templateStr?: string, data: Record<string, string> = {}) {
@@ -866,7 +916,7 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
                       { name: 'kronologi_singkat', label: 'Kronologi Singkat', type: 'textarea', required: true },
                       { name: 'langkah_mitigasi', label: 'Langkah Penanganan & Pemulihan', type: 'textarea', required: true },
                       { name: 'kontak_dpo', label: 'Kontak PIC / Petugas Pelindungan Data', type: 'text', required: true },
-                    ]).map((f: any) => (
+                    ]).map((f: { name: string; label: string; type?: string; required?: boolean; placeholder?: string }) => (
                       <label key={f.name} className="field">
                         <span>{f.label} {f.required && <strong style={{ color: '#EF4444' }}>*</strong>}</span>
                         {f.type === 'textarea' ? (
@@ -1016,7 +1066,7 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
                     .map((x) => {
                       const severityColor: Record<string, string> = { CRITICAL: '#EF4444', HIGH: '#F59E0B', MEDIUM: '#00E5FF', LOW: '#10B981' };
                       const statusLabel: Record<string, string> = { REPORTED: 'DILAPORKAN', TRIAGED: 'DITRIAGE', INVESTIGATING: 'DISELIDIKI', CONTAINED: 'DITANGANI', RESOLVED: 'SELESAI', CLOSED: 'DITUTUP' };
-                      const deadlineMs = x.deadlineAt ? new Date(x.deadlineAt).getTime() - Date.now() : null;
+                      const deadlineMs = x.deadlineAt ? new Date(x.deadlineAt).getTime() - now : null;
                       const hoursLeft = deadlineMs ? Math.max(0, Math.floor(deadlineMs / 3600000)) : null;
                       return (
                         <div className="card" key={x.id}>
@@ -1061,7 +1111,7 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
                   ['Pemerasan Siber & Ancaman Doxing', 'chk-umkm-pdp', 'Prosedur dokumentasi bukti ancaman dan bantuan hukum darurat.'],
                   ['Menyimpan Bukti Digital yang Sah', 'chk-umkm-pdp', 'SOP pengambilan screenshot, hash file, dan rantai bukti (chain of custody).'],
                   ['Kepatuhan Keamanan Sistem PSE', 'chk-umkm-pdp', 'Pedoman tata kelola sistem elektronik sesuai PP No. 71 Tahun 2019.'],
-                ].map(([t, chkSlug, d]) => (
+                ].map(([t, , d]) => (
                   <Card key={t} title={t} href="/checklist" eyebrow="SOP RESPON CEPAT">
                     <p style={{ margin: 0 }}>{d}</p>
                   </Card>
@@ -1347,8 +1397,9 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
                                 await api.updateIncidentStatus(activeIncident.id, 'RESOLVED');
                                 setActiveIncident({ ...activeIncident, status: 'RESOLVED' });
                                 alert('Status insiden berhasil diperbarui menjadi RESOLVED!');
-                              } catch (err: any) {
-                                alert('Gagal memperbarui status: ' + err.message);
+                              } catch (err: unknown) {
+                                const msg = err instanceof Error ? err.message : 'Kesalahan server';
+                                alert('Gagal memperbarui status: ' + msg);
                               }
                             }}
                           >
@@ -1756,8 +1807,7 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
                 <button
                   className="btn secondary"
                   onClick={() => {
-                    document.cookie = 'lexora_session=; Max-Age=0; path=/';
-                    window.location.href = '/login';
+                    nextAuthSignOut({ callbackUrl: '/login' });
                   }}
                 >
                   Keluar dari Sesi (Logout)
@@ -1780,33 +1830,64 @@ export function SectionPage({ kind, detail = false }: { kind: string; detail?: b
 
             {message && <div className="alert" style={{ marginBottom: 14 }}>{message}</div>}
 
-            <label className="field">
-              <span>Email</span>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@lexora.id" />
-            </label>
-            <label className="field" style={{ marginTop: 10 }}>
-              <span>Kata Sandi</span>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            </label>
+            <form onSubmit={handleSignIn}>
+              <label className="field">
+                <span>Email</span>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" required />
+              </label>
+              <label className="field" style={{ marginTop: 10 }}>
+                <span>Kata Sandi</span>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </label>
 
-            <button className="btn" style={{ width: '100%', marginTop: 18 }} onClick={signIn}>
-              Masuk Sekarang →
-            </button>
+              <button className="btn" type="submit" disabled={isSigningIn} style={{ width: '100%', marginTop: 18 }}>
+                {isSigningIn ? 'Memverifikasi...' : 'Masuk Sekarang →'}
+              </button>
+            </form>
 
-            <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.82rem', color: '#94A3B8' }}>
-              <strong>Pilih Akun Terdaftar di Database:</strong>
-              <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                {account.map((a) => (
-                  <button
-                    key={a.email}
-                    className="btn ghost"
-                    style={{ fontSize: '0.78rem', padding: '4px 8px' }}
-                    onClick={() => setEmail(a.email)}
-                  >
-                    {a.role}: {a.name}
-                  </button>
-                ))}
+            <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.85rem', color: '#94A3B8', textAlign: 'center' }}>
+              Belum memiliki akun? <Link href="/register" style={{ color: '#00E5FF', fontWeight: 600 }}>Daftar akun baru</Link>
+            </div>
+          </div>
+        )}
+
+        {kind === 'register' && (
+          <div className="panel" style={{ maxWidth: 460, margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+              <Image src="/mascot/gen-01-welcome.webp" alt="Lexo Wave" width={56} height={56} />
+              <div>
+                <h2 style={{ margin: 0, color: '#FFFFFF' }}>Daftar Akun Lexora</h2>
+                <span className="label">BUAT AKUN PELAPOR & AKSES DASHBOARD</span>
               </div>
+            </div>
+
+            {message && <div className="alert" style={{ marginBottom: 14 }}>{message}</div>}
+
+            <form onSubmit={handleRegister}>
+              <label className="field">
+                <span>Nama Lengkap</span>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama Lengkap" required />
+              </label>
+              <label className="field" style={{ marginTop: 10 }}>
+                <span>Email</span>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nama@email.com" required />
+              </label>
+              <label className="field" style={{ marginTop: 10 }}>
+                <span>Kata Sandi (Minimal 8 Karakter)</span>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} required />
+              </label>
+              <label className="field" style={{ marginTop: 10 }}>
+                <span>Konfirmasi Kata Sandi</span>
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} minLength={8} required />
+              </label>
+
+              <button className="btn" type="submit" disabled={isSigningIn} style={{ width: '100%', marginTop: 18 }}>
+                {isSigningIn ? 'Mendaftarkan Akun...' : 'Daftar Sekarang →'}
+              </button>
+            </form>
+
+            <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.85rem', color: '#94A3B8', textAlign: 'center' }}>
+              Sudah memiliki akun? <Link href="/login" style={{ color: '#00E5FF', fontWeight: 600 }}>Masuk di sini</Link>
             </div>
           </div>
         )}

@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Phone, ShieldCheck, AlertTriangle, FileText, Lock, Sparkles, CheckCircle2, Bot, BookOpen, CheckSquare, ShieldAlert, GraduationCap } from 'lucide-react';
+import { ArrowRight, AlertTriangle, FileText, Sparkles, CheckCircle2, Bot, BookOpen, CheckSquare, ShieldAlert, GraduationCap } from 'lucide-react';
 import { Card } from '@/components/ui';
-import { channels, incidentTypes } from '@/data/channels';
+import { channels } from '@/data/channels';
 
 const corePillars = [
   {
@@ -226,7 +226,7 @@ export default function Home() {
                 ['03. Checklist', 'Checklist kepatuhan interaktif otomatis sesuai jenis insiden.'],
                 ['04. Template', 'Form dinamis menghasilkan dokumen hukum siap cetak berstandar resmi.'],
                 ['05. Tindakan', 'Kirim notifikasi ke lembaga PDP, lapor bank, atau ajukan ke kepolisian.'],
-              ].map(([t, d], i) => (
+              ].map(([t, d]) => (
                 <div key={t} style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ color: '#00E5FF', fontWeight: 800, fontSize: '0.95rem', marginBottom: 6 }}>{t}</div>
                   <p className="muted" style={{ fontSize: '0.82rem', margin: 0, lineHeight: 1.5 }}>{d}</p>
