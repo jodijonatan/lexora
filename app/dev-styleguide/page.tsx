@@ -11,28 +11,28 @@ export default function Page() {
         <h2 style={{ color: '#FFFFFF', margin: '0 0 16px' }}>Aset Identitas Resmi</h2>
         <div style={{ display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ textAlign: 'center' }}>
-            <Image src="/logo/logo-glow.png" alt="Logo 3D" width={80} height={80} />
-            <div className="label" style={{ marginTop: 8 }}>Logo 3D Cyan Glow</div>
+            <Image src="/logo/logo-glow.webp" alt="Logo 3D" width={80} height={80} style={{ objectFit: 'contain' }} />
+            <div className="label" style={{ marginTop: 8 }}>Logo Cyan Glow</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <Image src="/mascot/mascot-wave.png" alt="Mascot Wave" width={80} height={80} />
+            <Image src="/mascot/gen-01-welcome.webp" alt="Mascot Wave" width={80} height={80} style={{ objectFit: 'contain' }} />
             <div className="label" style={{ marginTop: 8 }}>Lexo: Greeting</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <Image src="/mascot/mascot-law.png" alt="Mascot Law" width={80} height={80} />
+            <Image src="/mascot/cht-03-citation.webp" alt="Mascot Law" width={80} height={80} style={{ objectFit: 'contain' }} />
             <div className="label" style={{ marginTop: 8 }}>Lexo: Legal Analysis</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <Image src="/mascot/mascot-shield.png" alt="Mascot Shield" width={80} height={80} />
+            <Image src="/mascot/inc-02-shield.webp" alt="Mascot Shield" width={80} height={80} style={{ objectFit: 'contain' }} />
             <div className="label" style={{ marginTop: 8 }}>Lexo: Shield Protection</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <Image src="/mascot/mascot-book.png" alt="Mascot Book" width={80} height={80} />
-            <div className="label" style={{ marginTop: 8 }}>Lexo: Education/Book</div>
+            <Image src="/mascot/cht-01-thinking.webp" alt="Mascot Book" width={80} height={80} style={{ objectFit: 'contain' }} />
+            <div className="label" style={{ marginTop: 8 }}>Lexo: Analysis / Think</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <Image src="/mascot/mascot-peace.png" alt="Mascot Peace" width={80} height={80} />
-            <div className="label" style={{ marginTop: 8 }}>Lexo: Peace / Success</div>
+            <Image src="/mascot/edu-01-celebration.webp" alt="Mascot Peace" width={80} height={80} style={{ objectFit: 'contain' }} />
+            <div className="label" style={{ marginTop: 8 }}>Lexo: Success</div>
           </div>
         </div>
       </div>

@@ -7,13 +7,11 @@ export default function NotFound() {
       <div
         className="panel"
         style={{
-          maxWidth: 580,
+          maxWidth: 540,
           textAlign: 'center',
-          padding: '48px 32px',
-          background: 'linear-gradient(135deg, rgba(16, 28, 46, 0.85) 0%, rgba(8, 14, 24, 0.95) 100%)',
-          border: '1px solid rgba(0, 229, 255, 0.25)',
-          borderRadius: 20,
-          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
+          padding: '44px 28px',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
