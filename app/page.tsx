@@ -166,15 +166,25 @@ export default function Home() {
               {/* Sub-copy */}
               <p
                 style={{
-                  fontSize: '1.08rem',
-                  color: '#CBD5E1',
-                  lineHeight: 1.7,
-                  margin: '0 0 36px',
+                  fontSize: '1.05rem',
+                  color: '#94A3B8',
+                  lineHeight: 1.75,
+                  margin: '0 0 20px',
                   maxWidth: 480,
-                  fontWeight: 500,
                 }}
               >
                 Platform edukasi dan pendampingan hukum siber berbasis AI. Dari regulasi resmi UU PDP &amp; UU ITE ke checklist praktis, draf surat, dan panduan tanggap insiden — dalam hitungan menit.
+              </p>
+              <p
+                style={{
+                  fontSize: '0.95rem',
+                  color: '#64748B',
+                  lineHeight: 1.75,
+                  margin: '0 0 36px',
+                  maxWidth: 460,
+                }}
+              >
+                Dirancang untuk masyarakat dan UMKM yang tidak punya latar belakang hukum — Lexora menerjemahkan pasal demi pasal menjadi langkah nyata yang bisa langsung dieksekusi.
               </p>
 
               {/* CTAs */}
@@ -216,14 +226,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* RIGHT: Circle visual with floating badges outside border */}
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '50px 40px' }}>
-              {/* Circle container — mascot as focal point */}
+            {/* RIGHT: Circle visual with badges on the border */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'clamp(20px, 4vw, 40px)' }}>
               <div
                 style={{
                   position: 'relative',
-                  width: 420,
-                  height: 420,
+                  width: 'min(640px, 100%)',
+                  aspectRatio: '1 / 1',
                   borderRadius: '50%',
                   background: 'linear-gradient(145deg, rgba(13, 28, 48, 0.95) 0%, rgba(7, 16, 30, 0.98) 100%)',
                   border: '1px solid rgba(0, 229, 255, 0.2)',
@@ -231,127 +240,69 @@ export default function Home() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   boxShadow: '0 0 80px rgba(0, 229, 255, 0.1), 0 24px 60px rgba(0,0,0,0.5)',
-                  flexShrink: 0,
                 }}
               >
-                {/* Inner glow */}
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  borderRadius: '50%',
-                  background: 'radial-gradient(circle at 50% 40%, rgba(0, 229, 255, 0.13) 0%, transparent 65%)',
-                  pointerEvents: 'none',
-                }} />
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle at 50% 40%, rgba(0, 229, 255, 0.13) 0%, transparent 65%)',
+                    pointerEvents: 'none',
+                  }}
+                />
 
-                {/* Mascot — center focal point */}
                 <Image
                   src="/mascot/gen-01-welcome.webp"
                   alt="Lexo - Asisten Hukum AI"
-                  width={320}
-                  height={320}
+                  width={560}
+                  height={560}
                   className="animate-float"
-                  style={{ objectFit: 'contain', position: 'relative', zIndex: 1 }}
+                  style={{ width: '96%', height: '96%', objectFit: 'contain', position: 'relative', zIndex: 1 }}
                   priority
                 />
-              </div>
 
-              {/* Floating badge — top left: outside circle */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 0,
-                  background: 'rgba(10, 20, 34, 0.95)',
-                  border: '1px solid rgba(0, 229, 255, 0.3)',
-                  borderRadius: 14,
-                  padding: '12px 18px',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                  zIndex: 10,
-                }}
-              >
-                <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1, letterSpacing: '-0.04em' }}>6+</div>
-                <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 500, marginTop: 2 }}>Modul Regulasi</div>
-              </div>
-
-              {/* Floating badge — top right: outside circle */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 0,
-                  background: 'rgba(10, 20, 34, 0.95)',
-                  border: '1px solid rgba(0, 229, 255, 0.2)',
-                  borderRadius: 14,
-                  padding: '10px 16px',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                  zIndex: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <div style={{
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: '#00E5FF',
-                  boxShadow: '0 0 8px rgba(0, 229, 255, 0.8)',
-                  flexShrink: 0,
-                }} />
-                <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>UU PDP No. 27/2022</div>
-                  <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Aktif · Per Jan 2025</div>
-                </div>
-              </div>
-
-              {/* Floating badge — bottom right: outside circle */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 16,
-                  right: 0,
-                  background: 'rgba(30, 10, 10, 0.95)',
-                  border: '1px solid rgba(239, 68, 68, 0.35)',
-                  borderRadius: 14,
-                  padding: '12px 18px',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                  zIndex: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                }}
-              >
-                <AlertTriangle size={18} style={{ color: '#EF4444', flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>Tenggat 72 Jam</div>
-                  <div style={{ fontSize: '0.68rem', color: '#94A3B8' }}>Kebocoran data wajib lapor</div>
-                </div>
-              </div>
-
-              {/* Floating badge — bottom left: outside circle */}
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 28,
-                  left: 0,
-                  background: 'rgba(10, 20, 34, 0.95)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: 14,
-                  padding: '10px 16px',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                  zIndex: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <Bot size={16} style={{ color: '#00E5FF', flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>AI Bersitasi Pasal</div>
-                  <div style={{ fontSize: '0.68rem', color: '#64748B' }}>RAG · Sumber terverifikasi</div>
-                </div>
+                {[
+                  { top: '14.6%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6+', sub: 'Modul Regulasi' },
+                  { top: '14.6%', left: '85.4%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'dot', title: 'UU PDP No. 27/2022', sub: 'Aktif · Per Jan 2025' },
+                  { top: '85.4%', left: '85.4%', border: 'rgba(239,68,68,0.45)', bg: 'rgba(30,10,10,0.95)', icon: 'alert', title: 'Tenggat 72 Jam', sub: 'Kebocoran data wajib lapor' },
+                  { top: '85.4%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'bot', title: 'AI Bersitasi Pasal', sub: 'RAG · Sumber terverifikasi' },
+                ].map((b, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      top: b.top,
+                      left: b.left,
+                      transform: 'translate(-50%, -50%)',
+                      background: b.bg,
+                      border: `1px solid ${b.border}`,
+                      borderRadius: 14,
+                      padding: '10px 16px',
+                      backdropFilter: 'blur(12px)',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                      zIndex: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {b.icon === 'dot' && (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 8px rgba(0,229,255,0.8)', flexShrink: 0 }} />
+                    )}
+                    {b.icon === 'alert' && <AlertTriangle size={18} style={{ color: '#EF4444', flexShrink: 0 }} />}
+                    {b.icon === 'bot' && <Bot size={16} style={{ color: '#00E5FF', flexShrink: 0 }} />}
+                    <div>
+                      {b.big ? (
+                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FFF', lineHeight: 1, letterSpacing: '-0.04em' }}>{b.big}</div>
+                      ) : (
+                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFF', lineHeight: 1.2 }}>{b.title}</div>
+                      )}
+                      <div style={{ fontSize: '0.68rem', color: '#94A3B8', marginTop: 2 }}>{b.sub}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
