@@ -120,7 +120,7 @@ export default function Home() {
             {/* LEFT: Copy */}
             <div>
               {/* Eyebrow label */}
-              <div
+              {/* <div
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -136,7 +136,7 @@ export default function Home() {
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.06em', color: '#00E5FF', fontWeight: 600, textTransform: 'uppercase' }}>
                   Pendamping Hukum Siber AI · UINIC 8.0
                 </span>
-              </div>
+              </div> */}
 
               {/* Headline */}
               <h1
