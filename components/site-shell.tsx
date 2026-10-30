@@ -29,6 +29,11 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     setMenu(false);
   }
 
+  // Scroll to top immediately on route change without animation
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [path]);
+
   // Handle ESC key for modal
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {

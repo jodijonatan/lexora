@@ -75,6 +75,11 @@ export default function Lapor() {
     } catch {}
   }, [typeId, what, didNext, after, occurredAt, step]);
 
+  // Scroll to top immediately when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [step]);
+
   const narrative = [what, didNext, after, extra].filter(Boolean).join('\n');
   const score = useMemo(
     () =>
