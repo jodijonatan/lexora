@@ -9,6 +9,8 @@ const envSchema = z.object({
   AUTH_GOOGLE_SECRET: z.string().optional(),
 
   LLM_API_KEY: z.string().optional(),
+  LLM_BASE_URL: z.string().url('LLM_BASE_URL harus berupa URL yang valid').optional(),
+  LLM_MODEL: z.string().optional(),
   EMBEDDING_API_KEY: z.string().optional(),
 
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),

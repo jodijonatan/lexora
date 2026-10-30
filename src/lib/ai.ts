@@ -7,7 +7,11 @@ function getClient(): OpenAI {
   if (!_client) {
     const apiKey = process.env.LLM_API_KEY
     if (!apiKey) throw new Error('LLM_API_KEY tidak dikonfigurasi.')
-    _client = new OpenAI({ apiKey })
+
+    // baseURL opsional untuk provider non-OpenAI (OpenRouter, Groq, dll.)
+    // Default OpenAI SDK: https://api.openai.com/v1
+    const baseURL = process.env.LLM_BASE_URL || undefined
+    _client = new OpenAI({ apiKey, ...(baseURL ? { baseURL } : {}) })
   }
   return _client
 }
@@ -121,7 +125,7 @@ export async function generateAiAnswer(
   ]
 
   const completion = await client.chat.completions.create({
-    model: 'gpt-4o-mini', // Cost-efficient, fast
+    model: process.env.LLM_MODEL || 'gpt-4o-mini', // Dapat dari env, default cost-efficient
     messages,
     temperature: 0.3,
     max_tokens: 1024,

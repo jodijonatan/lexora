@@ -4,13 +4,38 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, ArrowRight, Save, Eye, EyeOff, ShieldCheck, Copy, CheckCircle2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Save,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  Copy,
+  CheckCircle2,
+  UploadCloud,
+  Image as ImageIcon,
+  Trash2,
+  ZoomIn,
+  FileText,
+  AlertCircle,
+  X,
+} from 'lucide-react';
 import { incidentTypes } from '@/data/channels';
 import { useCases, CaseRecord } from '@/store/cases';
 import { triage, completeness } from '@/lib/triage';
 import { PageHead, Meter, PrototypeNotice } from '@/components/ui';
 import { api } from '@/lib/api-client';
 import { createCaseId, generateSecurePin } from '@/lib/case-id';
+
+export interface UploadedEvidence {
+  id: string;
+  name: string;
+  sizeKB: number;
+  type: string;
+  dataUrl?: string;
+  category: 'TRANSFER' | 'CHAT' | 'PROFILE' | 'DOCUMENT' | 'LAINNYA';
+}
 
 const steps = [
   'Keselamatan',
@@ -44,6 +69,9 @@ export default function Lapor() {
   const [bank, setBank] = useState('');
   const [suspect, setSuspect] = useState('');
   const [evidence, setEvidence] = useState('');
+  const [evidenceFiles, setEvidenceFiles] = useState<UploadedEvidence[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [previewModalImg, setPreviewModalImg] = useState<{ url: string; name: string } | null>(null);
   const [contact, setContact] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -90,10 +118,10 @@ export default function Lapor() {
         platform,
         loss: loss === 'yes' ? (amount ? 'kerugian uang' : '') : 'tidak ada',
         suspect,
-        evidence,
+        evidence: evidenceFiles.length > 0 ? evidenceFiles.map((f) => f.name).join(', ') : evidence,
         contact: anonymous ? 'anonim' : contact,
       }),
-    [typeId, occurredAt, narrative, platform, loss, amount, suspect, evidence, contact, anonymous]
+    [typeId, occurredAt, narrative, platform, loss, amount, suspect, evidenceFiles, evidence, contact, anonymous]
   );
   const urgency = triage({
     typeId,
@@ -105,6 +133,52 @@ export default function Lapor() {
   });
   const selected = incidentTypes.find((t) => t.id === typeId);
   const canSend = !!typeId && narrative.trim().length >= 30 && (anonymous || !!contact.trim());
+
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`Berkas "${file.name}" melebihi batas 5MB.`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        const lower = file.name.toLowerCase();
+        const category: UploadedEvidence['category'] =
+          lower.includes('transfer') || lower.includes('bukti') || lower.includes('struk') || lower.includes('mutasi')
+            ? 'TRANSFER'
+            : lower.includes('chat') || lower.includes('wa') || lower.includes('whatsapp') || lower.includes('dm') || lower.includes('telegram')
+            ? 'CHAT'
+            : lower.includes('profil') || lower.includes('akun') || lower.includes('nomor')
+            ? 'PROFILE'
+            : lower.includes('pdf') || lower.includes('dok') || lower.includes('laporan')
+            ? 'DOCUMENT'
+            : 'LAINNYA';
+
+        const newFile: UploadedEvidence = {
+          id: Math.random().toString(36).slice(2, 9),
+          name: file.name,
+          sizeKB: Math.round(file.size / 1024),
+          type: file.type,
+          dataUrl,
+          category,
+        };
+        setEvidenceFiles((prev) => [...prev, newFile]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeEvidenceFile = (id: string) => {
+    setEvidenceFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  const updateEvidenceCategory = (id: string, category: UploadedEvidence['category']) => {
+    setEvidenceFiles((prev) => prev.map((f) => (f.id === id ? { ...f, category } : f)));
+  };
 
   function next() {
     if (step === 1 && !typeId) {
@@ -127,6 +201,19 @@ export default function Lapor() {
     if (!canSend) return;
     const id = createCaseId();
     const pin = generateSecurePin();
+
+    const formattedEvidence =
+      evidenceFiles.length > 0
+        ? evidenceFiles.map((f) => ({
+            name: f.name,
+            sizeKB: f.sizeKB,
+            dataUrl: f.dataUrl,
+            category: f.category,
+          }))
+        : evidence
+        ? [{ name: evidence, sizeKB: 0 }]
+        : [];
+
     const c: CaseRecord = {
       id,
       pin,
@@ -143,17 +230,29 @@ export default function Lapor() {
       createdAt: new Date().toISOString(),
       timeline: [{ at: new Date().toISOString(), text: 'Laporan tersimpan di Lexora. Belum dikirim ke pihak berwenang.', actor: 'LEXORA' }],
       channelReports: [],
-      evidence: evidence ? [{ name: evidence, sizeKB: 0 }] : [],
+      evidence: formattedEvidence,
       messages: [],
     };
     addCase(c);
     setSubmitted(c);
 
+    const evidenceSummary =
+      evidenceFiles.length > 0
+        ? ` | Bukti Digital: ${evidenceFiles.length} berkas (${evidenceFiles.map((f) => `${f.name} [${f.category}]`).join(', ')})`
+        : evidence
+        ? ` | Bukti: ${evidence}`
+        : '';
+
     // Sinkronisasi otomatis ke backend database Neon (tersedia untuk umum maupun akun terdaftar)
     api.createIncident({
       incidentTypeId: typeId === 'breach' ? 'kebocoran-data-pribadi' : 'penipuan-online',
       title: `${selected?.name || 'Laporan Kejadian Siber'} (${platform || 'Online'}) - [${id}]`,
-      description: narrative + (contact && !anonymous ? ` | Pelapor: ${contact}` : '') + (amount ? ` | Estimasi Kerugian: Rp ${Number(amount).toLocaleString('id-ID')}` : '') + ` | PIN Lacak: ${pin}`,
+      description:
+        narrative +
+        (contact && !anonymous ? ` | Pelapor: ${contact}` : '') +
+        (amount ? ` | Estimasi Kerugian: Rp ${Number(amount).toLocaleString('id-ID')}` : '') +
+        ` | PIN Lacak: ${pin}` +
+        evidenceSummary,
       severity: (urgency.urgency as string) === 'KRITIS' ? 'CRITICAL' : (urgency.urgency as string) === 'TINGGI' ? 'HIGH' : 'MEDIUM',
     }).catch((err) => {
       console.log('Local case registered. Backend sync note:', err?.message);
@@ -177,8 +276,9 @@ export default function Lapor() {
         <div className="container section">
           <PrototypeNotice />
           {c ? (
-            <div
-              className="grid2"
+            <>
+              <div
+                className="grid2"
               style={{
                 marginTop: 28,
                 alignItems: 'center',
@@ -259,10 +359,128 @@ export default function Lapor() {
                 </div>
               </div>
             </div>
+
+            {/* Berkas Bukti Digital Terverifikasi */}
+            {c.evidence && c.evidence.length > 0 && (
+              <div className="panel" style={{ marginTop: 24, background: 'var(--bg-panel)' }}>
+                <div className="label muted">BERKAS BUKTI DIGITAL TERVERIFIKASI ({c.evidence.length})</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginTop: 12 }}>
+                  {c.evidence.map((ev, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 10,
+                        padding: 10,
+                      }}
+                    >
+                      {ev.dataUrl ? (
+                        <div
+                          style={{
+                            width: '100%',
+                            height: 110,
+                            borderRadius: 6,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            marginBottom: 8,
+                          }}
+                          onClick={() => setPreviewModalImg({ url: ev.dataUrl || '', name: ev.name })}
+                          title="Klik untuk memperbesar"
+                        >
+                          <img src={ev.dataUrl} alt={ev.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.6)', borderRadius: 4, padding: 3, color: '#FFF' }}>
+                            <ZoomIn size={12} />
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ width: '100%', height: 110, borderRadius: 6, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00E5FF', marginBottom: 8 }}>
+                          <FileText size={32} />
+                        </div>
+                      )}
+                      <strong style={{ fontSize: '0.82rem', color: '#FFF', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {ev.name}
+                      </strong>
+                      {ev.category && (
+                        <span className="tag" style={{ fontSize: '0.7rem', marginTop: 4, display: 'inline-block' }}>
+                          {ev.category}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            </>
           ) : (
             <p>Data tersimpan. Silakan buka halaman pelacakan dengan Case ID Anda.</p>
           )}
         </div>
+
+        {/* Lightbox / Zoom Modal for Screenshots */}
+        {previewModalImg && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9999,
+              background: 'rgba(0, 0, 0, 0.85)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 20,
+              backdropFilter: 'blur(6px)',
+            }}
+            onClick={() => setPreviewModalImg(null)}
+          >
+            <div
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                background: '#0D1520',
+                border: '1px solid rgba(0, 229, 255, 0.4)',
+                borderRadius: 14,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 18px',
+                  borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.02)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ImageIcon size={16} style={{ color: '#00E5FF' }} />
+                  <strong style={{ color: '#FFFFFF', fontSize: '0.92rem' }}>{previewModalImg.name}</strong>
+                </div>
+                <button
+                  type="button"
+                  className="btn ghost"
+                  style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                  onClick={() => setPreviewModalImg(null)}
+                >
+                  <X size={15} style={{ display: 'inline', marginRight: 4 }} /> Tutup
+                </button>
+              </div>
+              <div style={{ padding: 16, overflow: 'auto', display: 'flex', justifyContent: 'center', background: '#070D14' }}>
+                <img
+                  src={previewModalImg.url}
+                  alt={previewModalImg.name}
+                  style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 8 }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   }
@@ -536,16 +754,247 @@ export default function Lapor() {
             {/* Step 5: Bukti */}
             {step === 5 && (
               <>
-                <h2 className="section-title">§05 · Inventarisasi Bukti Digital</h2>
-                <p className="muted">Di versi prototipe ini, file tidak diunggah ke internet demi privasi Anda. Anda cukup mencatat nama berkasnya.</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <h2 className="section-title">§05 · Unggah Bukti Digital (Screenshot & Dokumen)</h2>
+                    <p className="muted" style={{ margin: '4px 0 16px' }}>
+                      Lampirkan tangkapan layar percakapan, bukti transfer m-banking, struk ATM, atau profil pelaku. Bukti dienkripsi aman di peramban Anda.
+                    </p>
+                  </div>
+                  <span className="tag ok">
+                    <CheckCircle2 size={13} style={{ display: 'inline', marginRight: 4 }} />
+                    {evidenceFiles.length} Berkas Siap
+                  </span>
+                </div>
 
-                <label className="field">
-                  <span>Nama Berkas Bukti Utama</span>
-                  <input value={evidence} onChange={(e) => setEvidence(e.target.value)} placeholder="contoh: screenshot-chat-bukti-transfer.png" />
-                </label>
+                {/* Drag and Drop Zone */}
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    handleFileUpload(e.dataTransfer.files);
+                  }}
+                  style={{
+                    border: `2px dashed ${isDragging ? '#00E5FF' : 'rgba(0, 229, 255, 0.3)'}`,
+                    borderRadius: 14,
+                    padding: '28px 20px',
+                    textAlign: 'center',
+                    background: isDragging ? 'rgba(0, 229, 255, 0.08)' : 'rgba(10, 20, 32, 0.5)',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    position: 'relative',
+                  }}
+                  onClick={() => {
+                    const input = document.getElementById('evidence-file-input') as HTMLInputElement;
+                    input?.click();
+                  }}
+                >
+                  <input
+                    id="evidence-file-input"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleFileUpload(e.target.files)}
+                  />
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <div
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: '50%',
+                        background: 'rgba(0, 229, 255, 0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#00E5FF',
+                      }}
+                    >
+                      <UploadCloud size={26} />
+                    </div>
+                    <div style={{ color: '#FFFFFF', fontWeight: 600, fontSize: '1.02rem' }}>
+                      Tarik & Lepas Screenshot / Bukti Transfer ke Sini
+                    </div>
+                    <p className="muted" style={{ fontSize: '0.86rem', margin: 0 }}>
+                      Atau <span style={{ color: '#00E5FF', textDecoration: 'underline' }}>klik untuk memilih berkas</span> dari galeri / komputer
+                    </p>
+                    <span className="label muted" style={{ fontSize: '0.74rem', marginTop: 4 }}>
+                      FORMAT: JPG, PNG, WEBP, PDF · MAKSIMAL 5 MB PER BERKAS
+                    </span>
+                  </div>
+                </div>
+
+                {/* Uploaded Evidence Cards */}
+                {evidenceFiles.length > 0 && (
+                  <div style={{ marginTop: 20 }}>
+                    <div className="label muted" style={{ marginBottom: 10 }}>
+                      BERKAS BUKTI TERUNGGAH ({evidenceFiles.length})
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {evidenceFiles.map((file) => (
+                        <div
+                          key={file.id}
+                          className="card"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '10px 14px',
+                            gap: 12,
+                            background: 'rgba(14, 25, 40, 0.8)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                            {file.dataUrl && file.type.startsWith('image/') ? (
+                              <div
+                                style={{
+                                  width: 54,
+                                  height: 54,
+                                  borderRadius: 8,
+                                  overflow: 'hidden',
+                                  flexShrink: 0,
+                                  position: 'relative',
+                                  cursor: 'pointer',
+                                  border: '1px solid rgba(0, 229, 255, 0.4)',
+                                }}
+                                onClick={() => setPreviewModalImg({ url: file.dataUrl || '', name: file.name })}
+                                title="Klik untuk memperbesar"
+                              >
+                                <img
+                                  src={file.dataUrl}
+                                  alt={file.name}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    bottom: 2,
+                                    right: 2,
+                                    background: 'rgba(0,0,0,0.6)',
+                                    borderRadius: 4,
+                                    padding: 2,
+                                    color: '#FFFFFF',
+                                    display: 'flex',
+                                  }}
+                                >
+                                  <ZoomIn size={11} />
+                                </div>
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  width: 54,
+                                  height: 54,
+                                  borderRadius: 8,
+                                  background: 'rgba(255, 255, 255, 0.05)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0,
+                                  color: '#00E5FF',
+                                }}
+                              >
+                                <FileText size={24} />
+                              </div>
+                            )}
+
+                            <div style={{ minWidth: 0 }}>
+                              <strong
+                                style={{
+                                  color: '#FFFFFF',
+                                  fontSize: '0.9rem',
+                                  display: 'block',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {file.name}
+                              </strong>
+                              <span className="muted" style={{ fontSize: '0.78rem' }}>
+                                {file.sizeKB} KB
+                              </span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                            <select
+                              value={file.category}
+                              onChange={(e) =>
+                                updateEvidenceCategory(file.id, e.target.value as UploadedEvidence['category'])
+                              }
+                              style={{
+                                fontSize: '0.78rem',
+                                padding: '5px 8px',
+                                background: 'rgba(0, 0, 0, 0.4)',
+                                border: '1px solid rgba(255, 255, 255, 0.15)',
+                                borderRadius: 6,
+                                color: '#00E5FF',
+                              }}
+                            >
+                              <option value="TRANSFER">Bukti Transfer Bank/E-Wallet</option>
+                              <option value="CHAT">Screenshot Chat Pelaku</option>
+                              <option value="PROFILE">Profil / Nomor Pelaku</option>
+                              <option value="DOCUMENT">Dokumen Pendukung</option>
+                              <option value="LAINNYA">Bukti Lainnya</option>
+                            </select>
+
+                            {file.dataUrl && file.type.startsWith('image/') && (
+                              <button
+                                type="button"
+                                className="btn ghost"
+                                style={{ padding: 6 }}
+                                onClick={() => setPreviewModalImg({ url: file.dataUrl || '', name: file.name })}
+                                title="Lihat Foto"
+                              >
+                                <ZoomIn size={14} />
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              className="btn ghost"
+                              style={{ padding: 6, color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                              onClick={() => removeEvidenceFile(file.id)}
+                              title="Hapus berkas ini"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Optional Manual Name fallback */}
+                <div style={{ marginTop: 18 }}>
+                  <label className="field">
+                    <span>Catatan Berkas Tambahan (Jika Berkas di Perangkat Lain)</span>
+                    <input
+                      value={evidence}
+                      onChange={(e) => setEvidence(e.target.value)}
+                      placeholder="Contoh: Bukti fisik resi ATM tersimpan di dompet, rekaman panggilan di HP kedua"
+                    />
+                  </label>
+                </div>
 
                 <div className="alert" style={{ marginTop: 14 }}>
-                  <strong>Tips Penting:</strong> Jangan hapus pesan atau ekspor percakapan WhatsApp pelaku. Tangkapan layar dengan tanggal dan nomor telepon jelas adalah alat bukti sah menurut UU ITE.
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <ShieldCheck size={18} style={{ color: '#10B981', flexShrink: 0 }} />
+                    <div style={{ fontSize: '0.86rem', lineHeight: 1.5 }}>
+                      <strong>Kekuatan Hukum Bukti Digital (UU ITE Pasal 5):</strong>
+                      <br />
+                      Tangkapan layar percakapan chat dan bukti transfer bank adalah alat bukti elektronik yang sah di mata penyidik kepolisian. Pastikan nomor rekening, tanggal percakapan, dan nomor kontak terlihat jelas tanpa terpotong.
+                    </div>
+                  </div>
                 </div>
               </>
             )}
@@ -606,6 +1055,116 @@ export default function Lapor() {
                       <Meter value={score.score} />
                     </div>
                   </div>
+                </div>
+
+                {/* Evidence Review Gallery */}
+                <div className="panel" style={{ marginTop: 20, background: 'rgba(8, 14, 24, 0.6)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div className="label muted">BUKTI DIGITAL TERLAMPIR ({evidenceFiles.length})</div>
+                    <button
+                      type="button"
+                      className="btn ghost"
+                      style={{ fontSize: '0.8rem', padding: '4px 10px' }}
+                      onClick={() => setStep(5)}
+                    >
+                      + Tambah / Edit Bukti
+                    </button>
+                  </div>
+
+                  {evidenceFiles.length === 0 && !evidence ? (
+                    <p className="muted" style={{ margin: 0, fontSize: '0.88rem' }}>
+                      Belum ada berkas screenshot atau bukti yang diunggah. Anda dapat melanjutkannya sekarang atau melengkapi nanti via PIN lacak.
+                    </p>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+                      {evidenceFiles.map((file) => (
+                        <div
+                          key={file.id}
+                          style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 10,
+                            padding: 10,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 8,
+                          }}
+                        >
+                          {file.dataUrl && file.type.startsWith('image/') ? (
+                            <div
+                              style={{
+                                width: '100%',
+                                height: 100,
+                                borderRadius: 6,
+                                overflow: 'hidden',
+                                cursor: 'pointer',
+                                position: 'relative',
+                              }}
+                              onClick={() => setPreviewModalImg({ url: file.dataUrl || '', name: file.name })}
+                              title="Klik untuk melihat foto"
+                            >
+                              <img
+                                src={file.dataUrl}
+                                alt={file.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  background: 'rgba(0,0,0,0.3)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#FFFFFF',
+                                }}
+                              >
+                                <ZoomIn size={18} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                width: '100%',
+                                height: 100,
+                                borderRadius: 6,
+                                background: 'rgba(255,255,255,0.05)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#00E5FF',
+                              }}
+                            >
+                              <FileText size={32} />
+                            </div>
+                          )}
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: '0.82rem',
+                                fontWeight: 600,
+                                color: '#FFFFFF',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                            >
+                              {file.name}
+                            </div>
+                            <span className="tag" style={{ fontSize: '0.7rem', marginTop: 4, display: 'inline-block' }}>
+                              {file.category}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {evidence && (
+                        <div style={{ padding: 10, background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
+                          <span className="label muted">CATATAN</span>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>{evidence}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ marginTop: 20 }}>
@@ -699,6 +1258,70 @@ export default function Lapor() {
           </aside>
         </div>
       </div>
+
+      {/* Lightbox / Zoom Modal for Screenshots */}
+      {previewModalImg && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+            backdropFilter: 'blur(6px)',
+          }}
+          onClick={() => setPreviewModalImg(null)}
+        >
+          <div
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              background: '#0D1520',
+              border: '1px solid rgba(0, 229, 255, 0.4)',
+              borderRadius: 14,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 18px',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.02)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ImageIcon size={16} style={{ color: '#00E5FF' }} />
+                <strong style={{ color: '#FFFFFF', fontSize: '0.92rem' }}>{previewModalImg.name}</strong>
+              </div>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                onClick={() => setPreviewModalImg(null)}
+              >
+                <X size={15} style={{ display: 'inline', marginRight: 4 }} /> Tutup
+              </button>
+            </div>
+            <div style={{ padding: 16, overflow: 'auto', display: 'flex', justifyContent: 'center', background: '#070D14' }}>
+              <img
+                src={previewModalImg.url}
+                alt={previewModalImg.name}
+                style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 8 }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

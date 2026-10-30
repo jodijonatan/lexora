@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Search, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Search, ArrowRight, Eye, EyeOff, ShieldCheck, ZoomIn, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { PageHead, PrototypeNotice } from '@/components/ui';
 import { useCases } from '@/store/cases';
 
@@ -20,6 +20,7 @@ export default function Lacak() {
   const [tries, setTries] = useState(0);
   const [show, setShow] = useState(false);
   const [reply, setReply] = useState('');
+  const [previewImg, setPreviewImg] = useState<{ url: string; name: string } | null>(null);
 
   function search() {
     if (tries >= 5) {
@@ -214,9 +215,126 @@ export default function Lacak() {
                 </div>
               </div>
             </div>
+
+            {/* Evidence Display in Tracker */}
+            {found.evidence && found.evidence.length > 0 && (
+              <div className="panel" style={{ marginTop: 24 }}>
+                <h3 style={{ color: '#FFFFFF', margin: '0 0 14px' }}>Berkas Bukti Digital yang Terlampir ({found.evidence.length})</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+                  {found.evidence.map((ev, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 10,
+                        padding: 10,
+                      }}
+                    >
+                      {ev.dataUrl ? (
+                        <div
+                          style={{
+                            width: '100%',
+                            height: 110,
+                            borderRadius: 6,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            marginBottom: 8,
+                          }}
+                          onClick={() => setPreviewImg({ url: ev.dataUrl || '', name: ev.name })}
+                          title="Klik untuk memperbesar"
+                        >
+                          <img src={ev.dataUrl} alt={ev.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.6)', borderRadius: 4, padding: 3, color: '#FFF' }}>
+                            <ZoomIn size={12} />
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ width: '100%', height: 110, borderRadius: 6, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00E5FF', marginBottom: 8 }}>
+                          <FileText size={32} />
+                        </div>
+                      )}
+                      <strong style={{ fontSize: '0.82rem', color: '#FFF', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {ev.name}
+                      </strong>
+                      {ev.category && (
+                        <span className="tag" style={{ fontSize: '0.7rem', marginTop: 4, display: 'inline-block' }}>
+                          {ev.category}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Lightbox / Zoom Modal for Screenshots */}
+      {previewImg && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+            backdropFilter: 'blur(6px)',
+          }}
+          onClick={() => setPreviewImg(null)}
+        >
+          <div
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              background: '#0D1520',
+              border: '1px solid rgba(0, 229, 255, 0.4)',
+              borderRadius: 14,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.8)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 18px',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.02)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ImageIcon size={16} style={{ color: '#00E5FF' }} />
+                <strong style={{ color: '#FFFFFF', fontSize: '0.92rem' }}>{previewImg.name}</strong>
+              </div>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                onClick={() => setPreviewImg(null)}
+              >
+                <X size={15} style={{ display: 'inline', marginRight: 4 }} /> Tutup
+              </button>
+            </div>
+            <div style={{ padding: 16, overflow: 'auto', display: 'flex', justifyContent: 'center', background: '#070D14' }}>
+              <img
+                src={previewImg.url}
+                alt={previewImg.name}
+                style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 8 }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

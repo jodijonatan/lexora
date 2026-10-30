@@ -101,9 +101,12 @@ export const incidentsService = {
 
   async updateStatus(incidentId: string, userId: string, status: string, role?: string) {
     const isAdminOrReviewer = role === 'ADMIN' || role === 'LEGAL_REVIEWER'
-    const incident = await incidentsRepository.findById(incidentId, isAdminOrReviewer ? undefined : userId)
+    if (!isAdminOrReviewer) {
+      throw new ForbiddenError('Hanya Administrator atau Verifikator Hukum yang berwenang mengubah status penanganan kasus.')
+    }
+
+    const incident = await incidentsRepository.findById(incidentId)
     if (!incident) throw new NotFoundError('Insiden')
-    if (!isAdminOrReviewer && incident.userId !== userId) throw new ForbiddenError()
 
     const updated = await incidentsRepository.updateStatus(
       incidentId,

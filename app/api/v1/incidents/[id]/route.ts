@@ -2,7 +2,7 @@ import { type NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { ok, handleError } from '@/lib/api-response'
 import { incidentsService } from '@/src/modules/incidents/incidents.service'
-import { UnauthorizedError } from '@/lib/errors'
+import { UnauthorizedError, ForbiddenError } from '@/lib/errors'
 import { z } from 'zod'
 
 export async function GET(
@@ -29,6 +29,10 @@ export async function PATCH(
   try {
     const session = await auth()
     if (!session?.user?.id) throw new UnauthorizedError()
+
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'LEGAL_REVIEWER') {
+      throw new ForbiddenError('Hanya Administrator atau Verifikator Hukum yang berwenang mengubah status penanganan kasus.')
+    }
 
     const body = await req.json()
     const { status } = z
