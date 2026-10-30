@@ -27,10 +27,22 @@ async function main() {
     where: { email: 'reviewer@lexora.id' },
     update: { passwordHash: defaultPasswordHash },
     create: {
-      name: 'Dr. Hukum Siber, S.H., LL.M.',
+      name: 'Tim Reviewer Hukum Lexora',
       email: 'reviewer@lexora.id',
       passwordHash: defaultPasswordHash,
       role: UserRole.LEGAL_REVIEWER,
+    },
+  })
+
+  // Demo user — akun testing untuk evaluator / juri
+  await db.user.upsert({
+    where: { email: 'demo@lexora.id' },
+    update: { passwordHash: defaultPasswordHash },
+    create: {
+      name: 'Demo Pengguna',
+      email: 'demo@lexora.id',
+      passwordHash: defaultPasswordHash,
+      role: UserRole.USER,
     },
   })
 
@@ -111,7 +123,117 @@ async function main() {
     },
   })
 
-  console.log('✅ Regulasi & Pasal UU PDP berhasil disiapkan.')
+  // UU ITE No. 1 Tahun 2024 (Perubahan Kedua UU ITE)
+  const uuIte = await db.regulation.upsert({
+    where: { code: 'UU No. 1 Tahun 2024' },
+    update: {},
+    create: {
+      title: 'Undang-Undang Republik Indonesia Nomor 1 Tahun 2024 tentang Perubahan Kedua atas Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik',
+      code: 'UU No. 1 Tahun 2024',
+      category: 'UU',
+      year: 2024,
+      description:
+        'Perubahan kedua atas UU ITE yang memuat penyesuaian ketentuan pidana siber, perlindungan hak warga digital, dan penguatan mekanisme penyelesaian sengketa elektronik.',
+      sourceUrl: 'https://peraturan.go.id/id/uu-no-1-tahun-2024',
+      status: ContentStatus.PUBLISHED,
+      publishedAt: new Date('2024-01-02'),
+      reviewedById: legalReviewer.id,
+    },
+  })
+
+  // Pasal 27 UU ITE (Konten Terlarang)
+  await db.regulationArticle.upsert({
+    where: {
+      regulationId_articleNumber: {
+        regulationId: uuIte.id,
+        articleNumber: 'Pasal 27A',
+      },
+    },
+    update: {},
+    create: {
+      regulationId: uuIte.id,
+      chapter: 'BAB VII Perbuatan yang Dilarang',
+      articleNumber: 'Pasal 27A',
+      title: 'Larangan Distribusi Konten Bermuatan Penghinaan/Pencemaran Nama Baik',
+      content:
+        'Setiap Orang dengan sengaja menyerang kehormatan atau nama baik orang lain dengan cara menuduhkan suatu hal, dengan maksud yang jelas agar hal tersebut diketahui umum dalam Sistem Elektronik dan/atau melalui Sistem Elektronik dipidana dengan pidana penjara paling lama 1 (satu) tahun dan/atau denda paling banyak Rp500.000.000,00 (lima ratus juta rupiah).',
+    },
+  })
+
+  // Pasal 30 UU ITE (Akses Ilegal)
+  await db.regulationArticle.upsert({
+    where: {
+      regulationId_articleNumber: {
+        regulationId: uuIte.id,
+        articleNumber: 'Pasal 30',
+      },
+    },
+    update: {},
+    create: {
+      regulationId: uuIte.id,
+      chapter: 'BAB VII Perbuatan yang Dilarang',
+      articleNumber: 'Pasal 30',
+      title: 'Larangan Akses Sistem Elektronik Tanpa Izin',
+      content:
+        '(1) Setiap Orang dengan sengaja dan tanpa hak atau melawan hukum mengakses Komputer dan/atau Sistem Elektronik milik Orang lain dengan cara apa pun.\n(2) Setiap Orang dengan sengaja dan tanpa hak atau melawan hukum mengakses Komputer dan/atau Sistem Elektronik dengan cara apa pun dengan tujuan untuk memperoleh Informasi Elektronik dan/atau Dokumen Elektronik.\n(3) Setiap Orang dengan sengaja dan tanpa hak atau melawan hukum mengakses Komputer dan/atau Sistem Elektronik dengan cara apa pun dengan melanggar, menerobos, melampaui, atau menjebol sistem pengamanan.',
+    },
+  })
+
+  // PP No. 71 Tahun 2019 (Penyelenggaraan Sistem dan Transaksi Elektronik)
+  await db.regulation.upsert({
+    where: { code: 'PP No. 71 Tahun 2019' },
+    update: {},
+    create: {
+      title: 'Peraturan Pemerintah Nomor 71 Tahun 2019 tentang Penyelenggaraan Sistem dan Transaksi Elektronik',
+      code: 'PP No. 71 Tahun 2019',
+      category: 'PP',
+      year: 2019,
+      description:
+        'Mengatur kewajiban pendaftaran Penyelenggara Sistem Elektronik (PSE) lingkup publik dan privat, tata kelola data pengguna, serta mekanisme pemutusan akses konten terlarang.',
+      sourceUrl: 'https://peraturan.go.id/id/pp-no-71-tahun-2019',
+      status: ContentStatus.PUBLISHED,
+      publishedAt: new Date('2019-10-10'),
+      reviewedById: legalReviewer.id,
+    },
+  })
+
+  // Perpres No. 28 Tahun 2021 (BSSN)
+  await db.regulation.upsert({
+    where: { code: 'Perpres No. 28 Tahun 2021' },
+    update: {},
+    create: {
+      title: 'Peraturan Presiden Nomor 28 Tahun 2021 tentang Badan Siber dan Sandi Negara',
+      code: 'Perpres No. 28 Tahun 2021',
+      category: 'Perpres',
+      year: 2021,
+      description:
+        'Menetapkan tugas, fungsi, dan kewenangan BSSN sebagai lembaga pemerintah nonkementerian yang menyelenggarakan keamanan siber secara efektif dan efisien.',
+      sourceUrl: 'https://peraturan.go.id/id/perpres-no-28-tahun-2021',
+      status: ContentStatus.PUBLISHED,
+      publishedAt: new Date('2021-04-13'),
+      reviewedById: legalReviewer.id,
+    },
+  })
+
+  // SE OJK No. 29/SEOJK.03/2022 (Ketahanan Siber Perbankan)
+  await db.regulation.upsert({
+    where: { code: 'SE OJK No. 29/SEOJK.03/2022' },
+    update: {},
+    create: {
+      title: 'Surat Edaran OJK Nomor 29/SEOJK.03/2022 tentang Ketahanan dan Keamanan Siber bagi Bank Umum',
+      code: 'SE OJK No. 29/SEOJK.03/2022',
+      category: 'SE',
+      year: 2022,
+      description:
+        'Panduan teknis bagi bank umum dalam membangun sistem manajemen keamanan siber, mencakup tata kelola, penilaian risiko, penanganan insiden, dan pelaporan kepada OJK.',
+      sourceUrl: 'https://www.ojk.go.id/id/regulasi/surat-edaran-ojk/Pages/Surat-Edaran-OJK-Nomor-29-SEOJK-03-2022.aspx',
+      status: ContentStatus.PUBLISHED,
+      publishedAt: new Date('2022-12-29'),
+      reviewedById: legalReviewer.id,
+    },
+  })
+
+  console.log('✅ Regulasi & Pasal UU PDP, UU ITE, PP, Perpres, SE OJK berhasil disiapkan.')
 
   // 3. Seed Incident Types
   const kebocoranDataIncidentType = await db.incidentType.upsert({

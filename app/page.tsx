@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, AlertTriangle, FileText, Sparkles, CheckCircle2, Bot, BookOpen, CheckSquare, ShieldAlert, GraduationCap } from 'lucide-react';
+import { ArrowRight, AlertTriangle, FileText, CheckCircle2, Bot, BookOpen, CheckSquare, ShieldAlert, GraduationCap } from 'lucide-react';
 import { Card } from '@/components/ui';
 import { channels } from '@/data/channels';
 
@@ -226,7 +226,7 @@ export default function Home() {
 
                 {/* Desktop Orbit Badges */}
                 {[
-                  { top: '14.6%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6+', sub: 'Modul Regulasi' },
+                  { top: '14.6%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6', sub: 'Regulasi Resmi' },
                   { top: '14.6%', left: '85.4%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'dot', title: 'UU PDP No. 27/2022', sub: 'Aktif · Per Jan 2025' },
                   { top: '85.4%', left: '85.4%', border: 'rgba(239,68,68,0.45)', bg: 'rgba(30,10,10,0.95)', icon: 'alert', title: 'Tenggat 72 Jam', sub: 'Kebocoran data wajib lapor' },
                   { top: '85.4%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'bot', title: 'AI Bersitasi Pasal', sub: 'RAG · Sumber terverifikasi' },
@@ -271,7 +271,7 @@ export default function Home() {
               {/* Mobile Badges Grid (Shown cleanly below mascot on <= 900px, avoiding viewport overflow) */}
               <div className="hero-mobile-badges">
                 {[
-                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6+', sub: 'Modul Regulasi Terintegrasi' },
+                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6', sub: 'Regulasi Resmi Terintegrasi' },
                   { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'dot', title: 'UU PDP No. 27/2022', sub: 'Aktif · Per Jan 2025' },
                   { border: 'rgba(239,68,68,0.45)', bg: 'rgba(30,10,10,0.95)', icon: 'alert', title: 'Tenggat 72 Jam', sub: 'Kebocoran data wajib lapor' },
                   { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'bot', title: 'AI Bersitasi Pasal', sub: 'RAG · Sumber terverifikasi' },
@@ -415,19 +415,29 @@ export default function Home() {
                 position: 'relative',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div className="label">CONTOH INSIDEN TERDAFTAR</div>
-                <span className="tag">DITINJAU</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div className="label">CARA KERJA SISTEM</div>
+                <span className="tag" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10B981', borderColor: 'rgba(16, 185, 129, 0.3)' }}>AKTIF</span>
               </div>
-              <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '1.4rem', color: '#00E5FF', margin: '4px 0 10px' }}>
-                LXR-2026-000142
-              </h3>
-              <p className="muted" style={{ fontSize: '0.88rem', margin: '0 0 14px' }}>
-                Insiden penipuan transaksi digital sedang ditindaklanjuti dengan surat permohonan pemblokiran rekening bank penipu.
-              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[
+                  ['01', 'Isi form laporan insiden di Lexora', 'Lengkapi kronologi, bukti, dan data pelaku'],
+                  ['02', 'Terima Case ID unik otomatis', 'Format LXR-YYYY-XXXXXX · dapat dibagikan ke pihak berwenang'],
+                  ['03', 'Pantau tenggat & status berkas', 'Countdown 72 jam, checklist mitigasi, dan draf surat tersimpan'],
+                ].map(([num, title, desc]) => (
+                  <div key={num} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#00E5FF', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>{num}</div>
+                    <div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#F8FAFC', lineHeight: 1.3 }}>{title}</div>
+                      <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: 2 }}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
               <Link
-                href="/lacak?id=LXR-2026-000142"
+                href="/lapor"
                 style={{
+                  marginTop: 18,
                   color: '#00E5FF',
                   fontWeight: 700,
                   fontSize: '0.9rem',
@@ -436,7 +446,7 @@ export default function Home() {
                   gap: 6,
                 }}
               >
-                Lihat Simulasi Pelacakan Ini <ArrowRight size={15} />
+                Mulai Buat Laporan Sekarang <ArrowRight size={15} />
               </Link>
             </div>
           </div>
