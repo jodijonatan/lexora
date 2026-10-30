@@ -149,14 +149,13 @@ export default function Lapor() {
     addCase(c);
     setSubmitted(c);
 
-    // Sinkronisasi otomatis ke backend database jika pengguna memiliki sesi/akses
+    // Sinkronisasi otomatis ke backend database Neon (tersedia untuk umum maupun akun terdaftar)
     api.createIncident({
-      incidentTypeId: typeId === 'breach' ? 'cmvq5nh5j0006qqi0pid705sp' : 'cmvq5nh5p0007qqi0mvdf9s5e',
-      title: `${selected?.name || 'Laporan Kejadian Siber'} (${platform || 'Online'})`,
-      description: narrative + (contact && !anonymous ? ` | Pelapor: ${contact}` : '') + (amount ? ` | Estimasi Kerugian: Rp ${Number(amount).toLocaleString('id-ID')}` : ''),
+      incidentTypeId: typeId === 'breach' ? 'kebocoran-data-pribadi' : 'penipuan-online',
+      title: `${selected?.name || 'Laporan Kejadian Siber'} (${platform || 'Online'}) - [${id}]`,
+      description: narrative + (contact && !anonymous ? ` | Pelapor: ${contact}` : '') + (amount ? ` | Estimasi Kerugian: Rp ${Number(amount).toLocaleString('id-ID')}` : '') + ` | PIN Lacak: ${pin}`,
       severity: (urgency.urgency as string) === 'KRITIS' ? 'CRITICAL' : (urgency.urgency as string) === 'TINGGI' ? 'HIGH' : 'MEDIUM',
     }).catch((err) => {
-      // Pelaporan warga tetap aman tersimpan secara lokal via PIN pelacakan jika belum login
       console.log('Local case registered. Backend sync note:', err?.message);
     });
 

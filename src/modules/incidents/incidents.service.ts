@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { z } from 'zod'
 
 export const createIncidentSchema = z.object({
-  incidentTypeId: z.string().cuid(),
+  incidentTypeId: z.string().min(1),
   title: z.string().min(5).max(300),
   description: z.string().min(10).max(5000),
   severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('HIGH'),
@@ -22,7 +22,18 @@ export const incidentsService = {
   },
 
   async create(userId: string, input: z.infer<typeof createIncidentSchema>) {
-    const incidentType = await incidentsRepository.findTypeById(input.incidentTypeId)
+    let incidentType = await db.incidentType.findFirst({
+      where: {
+        OR: [
+          { id: input.incidentTypeId },
+          { slug: input.incidentTypeId },
+          { slug: input.incidentTypeId === 'breach' ? 'kebocoran-data-pribadi' : 'penipuan-online' },
+        ],
+      },
+    })
+    if (!incidentType) {
+      incidentType = await db.incidentType.findFirst()
+    }
     if (!incidentType) throw new NotFoundError('Jenis insiden')
 
     // Hitung deadline berdasarkan konfigurasi jenis insiden (bukan hardcode)
@@ -32,6 +43,7 @@ export const incidentsService = {
 
     const incident = await incidentsRepository.create({
       ...input,
+      incidentTypeId: incidentType.id,
       userId,
       deadlineAt,
     })

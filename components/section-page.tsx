@@ -1382,24 +1382,45 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
                         <Link href="/asisten" className="btn secondary" style={{ justifyContent: 'center' }}>
                           <Bot size={15} /> Tanya Panduan Hukum ke Asisten AI
                         </Link>
-                        {activeIncident.status !== 'RESOLVED' && activeIncident.status !== 'CLOSED' && (
-                          <button
-                            className="btn ghost"
-                            style={{ justifyContent: 'center', borderColor: '#10B981', color: '#10B981' }}
-                            onClick={async () => {
-                              try {
-                                await api.updateIncidentStatus(activeIncident.id, 'RESOLVED');
-                                setActiveIncident({ ...activeIncident, status: 'RESOLVED' });
-                                alert('Status insiden berhasil diperbarui menjadi RESOLVED!');
-                              } catch (err: unknown) {
-                                const msg = err instanceof Error ? err.message : 'Kesalahan server';
-                                alert('Gagal memperbarui status: ' + msg);
-                              }
-                            }}
-                          >
-                            <CheckCircle2 size={15} /> Tandai Kasus Telah Ditangani (RESOLVED)
-                          </button>
-                        )}
+                        <div style={{ marginTop: 10, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                          <span className="label" style={{ display: 'block', marginBottom: 8, color: '#00E5FF' }}>
+                            UBAH STATUS KASUS (VERIFIKATOR / ADMIN)
+                          </span>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                            {[
+                              { key: 'INVESTIGATING', label: 'Investigasi', color: '#F59E0B' },
+                              { key: 'CONTAINED', label: 'Terkendali', color: '#3B82F6' },
+                              { key: 'RESOLVED', label: 'Selesai (Resolved)', color: '#10B981' },
+                              { key: 'CLOSED', label: 'Tutup Kasus', color: '#94A3B8' },
+                            ].map((st) => (
+                              <button
+                                key={st.key}
+                                type="button"
+                                className="btn ghost"
+                                style={{
+                                  fontSize: '0.8rem',
+                                  padding: '8px 10px',
+                                  borderColor: activeIncident.status === st.key ? st.color : 'rgba(255,255,255,0.15)',
+                                  color: activeIncident.status === st.key ? '#FFFFFF' : st.color,
+                                  background: activeIncident.status === st.key ? `${st.color}33` : 'transparent',
+                                  fontWeight: activeIncident.status === st.key ? 700 : 500,
+                                }}
+                                onClick={async () => {
+                                  try {
+                                    await api.updateIncidentStatus(activeIncident.id, st.key);
+                                    setActiveIncident({ ...activeIncident, status: st.key as Incident['status'] });
+                                    alert(`Status kasus berhasil diubah menjadi ${st.key}!`);
+                                  } catch (err: unknown) {
+                                    const msg = err instanceof Error ? err.message : 'Kesalahan server';
+                                    alert('Gagal memperbarui status: ' + msg);
+                                  }
+                                }}
+                              >
+                                {activeIncident.status === st.key ? '✓ ' : ''}{st.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
