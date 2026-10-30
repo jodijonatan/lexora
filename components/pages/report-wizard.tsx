@@ -57,7 +57,7 @@ export default function Lapor() {
   const [threat, setThreat] = useState(false);
   const [minor, setMinor] = useState(false);
   const [recent, setRecent] = useState(false);
-  const [occurredAt, setOccurredAt] = useState('');
+  const [occurredAt] = useState(() => new Date().toISOString());
   const [platform, setPlatform] = useState('WhatsApp');
   const [what, setWhat] = useState('');
   const [didNext, setDidNext] = useState('');
@@ -89,7 +89,6 @@ export default function Lapor() {
           setWhat(v.what || '');
           setDidNext(v.didNext || '');
           setAfter(v.after || '');
-          setOccurredAt(v.occurredAt || '');
           setDraftNotice(true);
         }
       } catch {}
@@ -614,8 +613,32 @@ export default function Lapor() {
               <>
                 <h2 className="section-title">§02 · Ceritakan Jalannya Kejadian</h2>
                 <label className="field">
-                  <span>Kapan insiden ini terjadi? (Boleh perkiraan waktu)</span>
-                  <input type="datetime-local" value={occurredAt} onChange={(e) => setOccurredAt(e.target.value)} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span>Waktu & Tanggal Pembuatan Laporan (Otomatis Sistem)</span>
+                    <span className="tag ok" style={{ fontSize: '0.72rem' }}>
+                      <CheckCircle2 size={11} style={{ display: 'inline', marginRight: 4 }} />
+                      Stempel Waktu Otomatis
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={new Date(occurredAt).toLocaleString('id-ID', {
+                      dateStyle: 'full',
+                      timeStyle: 'medium',
+                    })}
+                    readOnly
+                    disabled
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      borderColor: 'rgba(0, 229, 255, 0.3)',
+                      color: '#00E5FF',
+                      cursor: 'not-allowed',
+                      fontWeight: 600,
+                    }}
+                  />
+                  <small className="muted" style={{ fontSize: '0.8rem', marginTop: 4, display: 'block' }}>
+                    *Waktu pencatatan ditetapkan otomatis secara sistem saat pelaporan disusun demi validitas & keotentikan bukti forensik siber.
+                  </small>
                 </label>
 
                 <label className="field">
@@ -1029,6 +1052,11 @@ export default function Lapor() {
                   <div className="panel" style={{ background: 'rgba(8, 14, 24, 0.6)' }}>
                     <div className="label muted">JENIS KEJADIAN</div>
                     <p style={{ fontWeight: 700, color: '#FFFFFF' }}>{selected?.name || 'Belum dipilih'}</p>
+
+                    <div className="label muted">WAKTU PEMBUATAN LAPORAN</div>
+                    <p style={{ color: '#00E5FF', fontWeight: 600 }}>
+                      {new Date(occurredAt).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}
+                    </p>
 
                     <div className="label muted">PLATFORM</div>
                     <p>{platform}</p>
