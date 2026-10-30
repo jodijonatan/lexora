@@ -25,9 +25,18 @@ export const incidentsRepository = {
     description: string
     severity: IncidentSeverity
     deadlineAt?: Date
+    evidenceJson?: unknown
   }) {
     return db.incident.create({
-      data,
+      data: {
+        userId: data.userId,
+        incidentTypeId: data.incidentTypeId,
+        title: data.title,
+        description: data.description,
+        severity: data.severity,
+        deadlineAt: data.deadlineAt,
+        ...(data.evidenceJson ? { evidenceJson: data.evidenceJson as never } : {}),
+      },
       include: { incidentType: true },
     })
   },

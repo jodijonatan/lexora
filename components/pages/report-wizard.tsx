@@ -253,6 +253,16 @@ export default function Lapor() {
         ` | PIN Lacak: ${pin}` +
         evidenceSummary,
       severity: (urgency.urgency as string) === 'KRITIS' ? 'CRITICAL' : (urgency.urgency as string) === 'TINGGI' ? 'HIGH' : 'MEDIUM',
+      evidence: evidenceFiles.length > 0
+        ? evidenceFiles.map((f) => ({
+            id: f.id,
+            name: f.name,
+            sizeKB: f.sizeKB,
+            type: f.type,
+            dataUrl: f.dataUrl,
+            category: f.category,
+          }))
+        : undefined,
     }).catch((err) => {
       console.log('Local case registered. Backend sync note:', err?.message);
     });

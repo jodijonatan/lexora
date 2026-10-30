@@ -107,6 +107,15 @@ export interface Course {
   lessons?: CourseLesson[];
 }
 
+export interface EvidenceItem {
+  id?: string;
+  name: string;
+  sizeKB?: number;
+  type?: string;
+  dataUrl?: string;
+  category?: 'TRANSFER' | 'CHAT' | 'PROFILE' | 'DOCUMENT' | 'LAINNYA';
+}
+
 export interface Incident {
   id: string;
   incidentTypeId: string;
@@ -118,6 +127,7 @@ export interface Incident {
   reportedAt?: string;
   deadlineAt?: string;
   createdAt: string;
+  evidenceJson?: EvidenceItem[] | null;
   incidentType?: {
     id?: string;
     name: string;
@@ -263,6 +273,7 @@ export const api = {
     title: string;
     description: string;
     severity?: string;
+    evidence?: EvidenceItem[];
   }) => {
     return fetcher<Incident>('/incidents', {
       method: 'POST',

@@ -3,11 +3,21 @@ import { NotFoundError, ForbiddenError } from '@/lib/errors'
 import { db } from '@/lib/db'
 import { z } from 'zod'
 
+export const evidenceItemSchema = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  sizeKB: z.number().optional(),
+  type: z.string().optional(),
+  dataUrl: z.string().optional(),
+  category: z.enum(['TRANSFER', 'CHAT', 'PROFILE', 'DOCUMENT', 'LAINNYA']).optional(),
+})
+
 export const createIncidentSchema = z.object({
   incidentTypeId: z.string().min(1),
   title: z.string().min(5).max(300),
   description: z.string().min(10).max(5000),
   severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('HIGH'),
+  evidence: z.array(evidenceItemSchema).optional(),
 })
 
 export const createReminderSchema = z.object({
@@ -42,10 +52,13 @@ export const incidentsService = {
     )
 
     const incident = await incidentsRepository.create({
-      ...input,
       incidentTypeId: incidentType.id,
       userId,
+      title: input.title,
+      description: input.description,
+      severity: input.severity,
       deadlineAt,
+      evidenceJson: input.evidence && input.evidence.length > 0 ? input.evidence : undefined,
     })
 
     await incidentsRepository.addEvent({

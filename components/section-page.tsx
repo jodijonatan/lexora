@@ -17,6 +17,9 @@ import {
   Bot,
   Sparkles,
   GraduationCap,
+  ZoomIn,
+  X as XIcon,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { PageHead, Card, Meter } from '@/components/ui';
 import { channels, incidentTypes } from '@/data/channels';
@@ -28,6 +31,7 @@ import {
   DocTemplate,
   Course,
   Incident,
+  EvidenceItem,
   AnalyticsSummary,
   ActivityLogItem,
 } from '@/lib/api-client';
@@ -72,6 +76,7 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
   const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; role: string; createdAt: string } | null>(null);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [evidenceLightbox, setEvidenceLightbox] = useState<{ url: string; name: string } | null>(null);
 
   // Checklist state
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
@@ -1220,7 +1225,69 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
                     {activeIncident.description}
                   </p>
 
-                  {/* 72H Deadline Countdown Banner */}
+                  {/* Evidence Gallery */}
+                  {activeIncident.evidenceJson && activeIncident.evidenceJson.length > 0 && (
+                    <div style={{
+                      marginBottom: 18,
+                      padding: '16px 18px',
+                      background: 'rgba(0, 229, 255, 0.04)',
+                      border: '1px solid rgba(0, 229, 255, 0.2)',
+                      borderRadius: 12,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <ImageIcon size={16} style={{ color: '#00E5FF' }} />
+                        <span className="label" style={{ color: '#00E5FF' }}>
+                          BUKTI DIGITAL ({activeIncident.evidenceJson.length} BERKAS TERVERIFIKASI)
+                        </span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+                        {activeIncident.evidenceJson.map((ev: EvidenceItem, i: number) => (
+                          <div
+                            key={ev.id || i}
+                            style={{
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: 10,
+                              padding: 10,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 6,
+                            }}
+                          >
+                            {ev.dataUrl && ev.type?.startsWith('image/') ? (
+                              <div
+                                style={{ width: '100%', height: 100, borderRadius: 6, overflow: 'hidden', cursor: 'pointer', position: 'relative' }}
+                                onClick={() => setEvidenceLightbox({ url: ev.dataUrl!, name: ev.name })}
+                                title="Klik untuk memperbesar"
+                              >
+                                <img src={ev.dataUrl} alt={ev.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.6)', borderRadius: 4, padding: 3, color: '#FFF' }}>
+                                  <ZoomIn size={12} />
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ width: '100%', height: 100, borderRadius: 6, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00E5FF' }}>
+                                <FileText size={30} />
+                              </div>
+                            )}
+                            <strong style={{ fontSize: '0.78rem', color: '#FFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {ev.name}
+                            </strong>
+                            {ev.category && (
+                              <span className="tag" style={{ fontSize: '0.68rem', display: 'inline-block', padding: '2px 6px' }}>
+                                {ev.category}
+                              </span>
+                            )}
+                            {ev.sizeKB && (
+                              <small className="muted" style={{ fontSize: '0.72rem' }}>{ev.sizeKB} KB</small>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+
                   {activeIncident.deadlineAt && (
                     <div
                       style={{
@@ -2015,6 +2082,70 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
         )}
 
       </div>
+
+      {/* Evidence Lightbox Modal (insiden-detail admin view) */}
+      {evidenceLightbox && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0, 0, 0, 0.88)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+            backdropFilter: 'blur(6px)',
+          }}
+          onClick={() => setEvidenceLightbox(null)}
+        >
+          <div
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              background: '#0D1520',
+              border: '1px solid rgba(0, 229, 255, 0.4)',
+              borderRadius: 14,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.85)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 18px',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(255,255,255,0.02)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ImageIcon size={16} style={{ color: '#00E5FF' }} />
+                <strong style={{ color: '#FFFFFF', fontSize: '0.92rem' }}>{evidenceLightbox.name}</strong>
+              </div>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                onClick={() => setEvidenceLightbox(null)}
+              >
+                <XIcon size={15} style={{ display: 'inline', marginRight: 4 }} /> Tutup
+              </button>
+            </div>
+            <div style={{ padding: 16, overflow: 'auto', display: 'flex', justifyContent: 'center', background: '#070D14' }}>
+              <img
+                src={evidenceLightbox.url}
+                alt={evidenceLightbox.name}
+                style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: 8 }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
