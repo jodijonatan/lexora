@@ -279,7 +279,7 @@ export default function Lapor() {
           </div>
         )}
 
-        <div className="grid2" style={{ gridTemplateColumns: 'minmax(0, 1.7fr) minmax(280px, 1fr)', marginTop: 28, alignItems: 'start', gap: 28 }}>
+        <div className="wizard-grid">
           {/* Main Wizard Form */}
           <section className="panel" style={{ padding: 'clamp(20px, 3.5vw, 36px)' }}>
             <div className="stephead">

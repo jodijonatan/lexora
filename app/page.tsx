@@ -109,40 +109,14 @@ export default function Home() {
         </div>
 
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 'clamp(40px, 6vw, 96px)',
-              alignItems: 'center',
-            }}
-          >
+          <div className="hero-grid">
             {/* LEFT: Copy */}
-            <div>
-              {/* Eyebrow label */}
-              {/* <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  background: 'rgba(0, 229, 255, 0.08)',
-                  border: '1px solid rgba(0, 229, 255, 0.2)',
-                  borderRadius: 100,
-                  padding: '6px 14px',
-                  marginBottom: 28,
-                }}
-              >
-                <Sparkles size={13} style={{ color: '#00E5FF' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.06em', color: '#00E5FF', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Pendamping Hukum Siber AI · UINIC 8.0
-                </span>
-              </div> */}
-
+            <div className="hero-copy">
               {/* Headline */}
               <h1
                 style={{
-                  fontSize: 'clamp(2.6rem, 5vw, 4.4rem)',
-                  lineHeight: 1.06,
+                  fontSize: 'clamp(2.3rem, 5.2vw, 4.4rem)',
+                  lineHeight: 1.08,
                   letterSpacing: '-0.04em',
                   fontWeight: 900,
                   margin: '0 0 22px',
@@ -166,47 +140,48 @@ export default function Home() {
               {/* Sub-copy */}
               <p
                 style={{
-                  fontSize: '1.05rem',
+                  fontSize: 'clamp(0.95rem, 2vw, 1.05rem)',
                   color: '#94A3B8',
                   lineHeight: 1.75,
                   margin: '0 0 20px',
-                  maxWidth: 480,
+                  maxWidth: 520,
                 }}
               >
                 Platform edukasi dan pendampingan hukum siber berbasis AI. Dari regulasi resmi UU PDP &amp; UU ITE ke checklist praktis, draf surat, dan panduan tanggap insiden — dalam hitungan menit.
               </p>
               <p
                 style={{
-                  fontSize: '0.95rem',
+                  fontSize: 'clamp(0.88rem, 1.8vw, 0.95rem)',
                   color: '#64748B',
                   lineHeight: 1.75,
-                  margin: '0 0 36px',
-                  maxWidth: 460,
+                  margin: '0 0 32px',
+                  maxWidth: 480,
                 }}
               >
                 Dirancang untuk masyarakat dan UMKM yang tidak punya latar belakang hukum — Lexora menerjemahkan pasal demi pasal menjadi langkah nyata yang bisa langsung dieksekusi.
               </p>
 
               {/* CTAs */}
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 36 }}>
-                <Link className="btn" href="/asisten" style={{ padding: '13px 26px', fontSize: '1rem' }}>
+              <div className="hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 36 }}>
+                <Link className="btn" href="/asisten" style={{ padding: '12px 24px', fontSize: '0.96rem' }}>
                   Konsultasi AI Bersitasi <ArrowRight size={17} />
                 </Link>
-                <Link className="btn secondary" href="/checklist" style={{ padding: '13px 22px', fontSize: '1rem' }}>
+                <Link className="btn secondary" href="/checklist" style={{ padding: '12px 20px', fontSize: '0.96rem' }}>
                   Checklist Kepatuhan
                 </Link>
-                <Link className="btn ghost" href="/lapor" style={{ padding: '13px 18px', fontSize: '1rem' }}>
+                <Link className="btn ghost" href="/lapor" style={{ padding: '12px 18px', fontSize: '0.96rem' }}>
                   Lapor Cepat
                 </Link>
               </div>
 
               {/* Social proof / trust badges */}
               <div
+                className="hero-trust"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 20,
-                  paddingTop: 28,
+                  gap: 18,
+                  paddingTop: 24,
                   borderTop: '1px solid rgba(255,255,255,0.07)',
                   flexWrap: 'wrap',
                 }}
@@ -226,22 +201,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* RIGHT: Circle visual with badges on the border */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 'clamp(20px, 4vw, 40px)' }}>
-              <div
-                style={{
-                  position: 'relative',
-                  width: 'min(640px, 100%)',
-                  aspectRatio: '1 / 1',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(145deg, rgba(13, 28, 48, 0.95) 0%, rgba(7, 16, 30, 0.98) 100%)',
-                  border: '1px solid rgba(0, 229, 255, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 0 80px rgba(0, 229, 255, 0.1), 0 24px 60px rgba(0,0,0,0.5)',
-                }}
-              >
+            {/* RIGHT: Responsive Mascot visual with orbit badges on desktop & clean grid on mobile */}
+            <div className="hero-mascot-wrapper">
+              <div className="hero-mascot-circle">
                 <div
                   style={{
                     position: 'absolute',
@@ -258,10 +220,11 @@ export default function Home() {
                   width={560}
                   height={560}
                   className="animate-float"
-                  style={{ width: '96%', height: '96%', objectFit: 'contain', position: 'relative', zIndex: 1 }}
+                  style={{ width: '92%', height: '92%', objectFit: 'contain', position: 'relative', zIndex: 1 }}
                   priority
                 />
 
+                {/* Desktop Orbit Badges */}
                 {[
                   { top: '14.6%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6+', sub: 'Modul Regulasi' },
                   { top: '14.6%', left: '85.4%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'dot', title: 'UU PDP No. 27/2022', sub: 'Aktif · Per Jan 2025' },
@@ -270,6 +233,7 @@ export default function Home() {
                 ].map((b, i) => (
                   <div
                     key={i}
+                    className="hero-orbit-badge"
                     style={{
                       position: 'absolute',
                       top: b.top,
@@ -282,7 +246,6 @@ export default function Home() {
                       backdropFilter: 'blur(12px)',
                       boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                       zIndex: 10,
-                      display: 'flex',
                       alignItems: 'center',
                       gap: 8,
                       whiteSpace: 'nowrap',
@@ -300,6 +263,44 @@ export default function Home() {
                         <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFF', lineHeight: 1.2 }}>{b.title}</div>
                       )}
                       <div style={{ fontSize: '0.68rem', color: '#94A3B8', marginTop: 2 }}>{b.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile Badges Grid (Shown cleanly below mascot on <= 900px, avoiding viewport overflow) */}
+              <div className="hero-mobile-badges">
+                {[
+                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6+', sub: 'Modul Regulasi Terintegrasi' },
+                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'dot', title: 'UU PDP No. 27/2022', sub: 'Aktif · Per Jan 2025' },
+                  { border: 'rgba(239,68,68,0.45)', bg: 'rgba(30,10,10,0.95)', icon: 'alert', title: 'Tenggat 72 Jam', sub: 'Kebocoran data wajib lapor' },
+                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'bot', title: 'AI Bersitasi Pasal', sub: 'RAG · Sumber terverifikasi' },
+                ].map((b, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: b.bg,
+                      border: `1px solid ${b.border}`,
+                      borderRadius: 12,
+                      padding: '12px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      textAlign: 'left',
+                    }}
+                  >
+                    {b.icon === 'dot' && (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 8px rgba(0,229,255,0.8)', flexShrink: 0 }} />
+                    )}
+                    {b.icon === 'alert' && <AlertTriangle size={18} style={{ color: '#EF4444', flexShrink: 0 }} />}
+                    {b.icon === 'bot' && <Bot size={16} style={{ color: '#00E5FF', flexShrink: 0 }} />}
+                    <div>
+                      {b.big ? (
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{b.big}</div>
+                      ) : (
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#FFF', lineHeight: 1.2 }}>{b.title}</div>
+                      )}
+                      <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: 2 }}>{b.sub}</div>
                     </div>
                   </div>
                 ))}
@@ -504,24 +505,26 @@ export default function Home() {
               gap: 20,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-              <Image
-                src="/mascot/cht-03-citation.webp"
-                alt="Lexo - Rujukan Resmi Hukum"
-                width={70}
-                height={70}
-                style={{ objectFit: 'contain' }}
-              />
-              <div>
-                <strong style={{ color: '#FFFFFF', fontSize: '1.05rem', display: 'block' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', flex: '1 1 280px' }}>
+              <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+                <Image
+                  src="/mascot/cht-03-citation.webp"
+                  alt="Lexo - Rujukan Resmi Hukum"
+                  width={64}
+                  height={64}
+                  style={{ objectFit: 'contain' }}
+                />
+              </div>
+              <div style={{ flex: '1 1 220px' }}>
+                <strong style={{ color: '#FFFFFF', fontSize: '1.05rem', display: 'block', marginBottom: 2 }}>
                   Pahami Hak Digital Anda Berdasarkan Regulasi Resmi
                 </strong>
-                <span className="muted" style={{ fontSize: '0.9rem' }}>
+                <span className="muted" style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>
                   Pelajari UU No. 27/2022 (UU PDP) dan UU No. 1/2024 (UU ITE) lengkap dengan pasal, ayat, dan ringkasan bahasa awam.
                 </span>
               </div>
             </div>
-            <Link href="/regulations" className="btn" style={{ fontSize: '0.9rem', padding: '10px 22px' }}>
+            <Link href="/regulations" className="btn" style={{ fontSize: '0.9rem', padding: '10px 22px', whiteSpace: 'nowrap' }}>
               Buka Basis Regulasi →
             </Link>
           </div>

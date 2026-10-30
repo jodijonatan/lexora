@@ -41,6 +41,18 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [emergency, menu]);
 
+  // Prevent body scroll when mobile drawer is open
+  useEffect(() => {
+    if (menu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menu]);
+
   function exit() {
     try {
       sessionStorage.removeItem('lexora-draft');
@@ -61,7 +73,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
     <>
       <header className="topnav no-print">
         <div className="container navinner">
-          <Link href="/" className="wordmark" aria-label="Lexora Home">
+          <Link href="/" className="wordmark" aria-label="Lexora Home" onClick={() => setMenu(false)}>
             <div style={{ position: 'relative', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Image
                 src="/logo/logo-flat.webp"
@@ -76,7 +88,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               <span style={{ letterSpacing: '0.06em', fontWeight: 800, lineHeight: 1.15, fontSize: '1.15rem' }}>
                 LEX<span style={{ color: '#00E5FF' }}>ORA</span>
               </span>
-              <span style={{ fontSize: '0.62rem', letterSpacing: '0.12em', color: '#94A3B8', fontWeight: 500 }}>
+              <span className="wordmark-subtitle" style={{ fontSize: '0.62rem', letterSpacing: '0.12em', color: '#94A3B8', fontWeight: 500 }}>
                 CYBER LEGAL COMPANION
               </span>
             </div>
@@ -109,17 +121,18 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               style={{ padding: '7px 12px', fontSize: '0.82rem' }}
               aria-label="Bantuan Darurat"
             >
-              <ShieldAlert size={15} /> Darurat
+              <ShieldAlert size={15} />
+              <span className="nav-btn-text">Darurat</span>
             </button>
             <Link
-              className="btn ghost"
+              className="btn ghost nav-btn-desktop-only"
               href="/login"
               style={{ padding: '7px 14px', fontSize: '0.82rem' }}
             >
               Masuk
             </Link>
             <Link
-              className="btn"
+              className="btn nav-btn-desktop-only"
               href="/lapor"
               style={{ padding: '7px 16px', fontSize: '0.82rem' }}
             >
@@ -138,43 +151,78 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
+        {/* Mobile Navigation Drawer */}
         {menu && (
-          <div
-            className="container"
-            style={{
-              padding: '14px 0 20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            }}
-          >
-            {mainLinks.map(([name, href]) => {
-              const active = path === href || (href !== '/' && path.startsWith(href));
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMenu(false)}
-                  style={{
-                    color: active ? '#00E5FF' : '#E2E8F0',
-                    fontWeight: active ? 600 : 500,
-                    padding: '8px 4px',
-                    fontSize: '0.95rem',
-                  }}
-                >
-                  {name}
+          <div className="mobile-menu-drawer" role="dialog" aria-label="Menu Navigasi Mobile">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <span className="label muted">NAVIGASI MODUL</span>
+              <button
+                className="btn ghost"
+                onClick={() => setMenu(false)}
+                style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                aria-label="Tutup Menu"
+              >
+                <X size={16} /> Tutup
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {mainLinks.map(([name, href]) => {
+                const active = path === href || (href !== '/' && path.startsWith(href));
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setMenu(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      color: active ? '#00E5FF' : '#E2E8F0',
+                      background: active ? 'rgba(0, 229, 255, 0.08)' : 'transparent',
+                      border: active ? '1px solid rgba(0, 229, 255, 0.25)' : '1px solid transparent',
+                      borderRadius: 8,
+                      fontWeight: active ? 600 : 500,
+                      padding: '11px 14px',
+                      fontSize: '0.96rem',
+                    }}
+                  >
+                    <span>{name}</span>
+                    <ArrowRight size={14} style={{ opacity: active ? 1 : 0.4 }} />
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <Link href="/dashboard" className="btn secondary" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                  Dashboard
                 </Link>
-              );
-            })}
-            <div style={{ display: 'flex', gap: 10, marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
-              <Link href="/dashboard" className="btn secondary" style={{ flex: 1, fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
-                Dashboard
-              </Link>
-              <Link href="/toolkit" className="btn ghost" style={{ flex: 1, fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
-                Toolkit
-              </Link>
+                <Link href="/toolkit" className="btn ghost" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                  Cyber Toolkit
+                </Link>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <Link href="/login" className="btn ghost" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                  Masuk Akun
+                </Link>
+                <Link href="/lapor" className="btn" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                  Mulai Lapor →
+                </Link>
+              </div>
+
+              <button
+                className="btn danger"
+                onClick={() => {
+                  setMenu(false);
+                  setEmergency(true);
+                }}
+                style={{ width: '100%', fontSize: '0.88rem', marginTop: 4 }}
+              >
+                <ShieldAlert size={16} /> Butuh Bantuan Darurat?
+              </button>
             </div>
           </div>
         )}
@@ -197,15 +245,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
       {/* Floating Companion Widget: GEN-03 Idle/Standby */}
       {!path.startsWith('/asisten') && (
-        <div
-          className="no-print"
-          style={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            zIndex: 90,
-          }}
-        >
+        <div className="floating-companion no-print">
           <Link
             href="/asisten"
             style={{
@@ -221,7 +261,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               textDecoration: 'none',
               transition: 'border-color 0.2s ease, transform 0.2s ease',
             }}
-            className="hover-card"
+            className="hover-card floating-companion-pill"
             title="Buka Asisten AI Hukum Siber Lexo"
           >
             <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
@@ -234,7 +274,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
                 className="animate-float"
               />
             </div>
-            <div>
+            <div className="companion-text">
               <div style={{ fontSize: '0.68rem', color: '#00E5FF', fontWeight: 600, letterSpacing: '0.04em' }}>
                 ASISTEN HUKUM
               </div>
@@ -279,7 +319,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 20 }}>
+          <div className="footer-links-grid">
             <div>
               <div className="label muted" style={{ marginBottom: 12, fontSize: '0.7rem' }}>FITUR INTI</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.85rem' }}>
@@ -345,6 +385,8 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             className="panel"
             style={{
               width: 'min(540px, 100%)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
               borderColor: 'rgba(239, 68, 68, 0.35)',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
             }}

@@ -715,7 +715,7 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
                             className={isFinished ? 'animate-bounce' : 'animate-float'}
                           />
                         </div>
-                        <div style={{ flex: 1, minWidth: 260 }}>
+                        <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                           <span className="tag" style={{ marginBottom: 6 }}>{activeChecklist.incidentType?.name || 'SOP KEPATUHAN'}</span>
                           <h1 style={{ color: '#FFFFFF', fontSize: '1.45rem', margin: '6px 0' }}>{activeChecklist.title}</h1>
                           <p className="muted" style={{ margin: '0 0 12px', fontSize: '0.9rem' }}>{activeChecklist.description}</p>
@@ -962,7 +962,7 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
                   style={{
                     background: '#FFFFFF',
                     color: '#0F172A',
-                    padding: '40px 36px',
+                    padding: 'clamp(20px, 4vw, 40px) clamp(16px, 3.5vw, 36px)',
                     borderRadius: 8,
                     boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
                   }}
@@ -1022,7 +1022,7 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                     <Image src="/mascot/inc-01-calm-down.webp" alt="Lexo Tenang" width={64} height={64} style={{ objectFit: 'contain' }} />
-                    <div style={{ flex: 1, minWidth: 260 }}>
+                    <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                       <div className="label" style={{ color: '#EF4444', marginBottom: 4 }}>
                         <Clock size={14} style={{ display: 'inline', marginRight: 4 }} />
                         PERINGATAN TENGGAT WAKTU · PASAL 46 UU PDP (3 x 24 JAM)
@@ -1239,7 +1239,7 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
                         height={52}
                         style={{ objectFit: 'contain' }}
                       />
-                      <div style={{ flex: 1, minWidth: 240 }}>
+                      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                         <div className="label" style={{ color: '#EF4444' }}>
                           <Clock size={13} style={{ display: 'inline', marginRight: 4 }} />
                           TENGGAT LAPOR HUKUM (UU PDP PASAL 46 - 3x24 JAM)
@@ -1456,7 +1456,7 @@ export function SectionPage({ kind }: { kind: string; detail?: boolean }) {
                       gap: 16,
                     }}
                   >
-                    <div style={{ flex: 1, minWidth: 260 }}>
+                    <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                         <span className="label" style={{ color: '#00E5FF' }}>{x.id}</span>
                         <span className="tag">{x.incidentType?.name || 'Insiden Siber'}</span>
