@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { SiteShell } from '@/components/site-shell';
+import { AuthProvider } from '@/components/auth-provider';
 
 export const viewport: Viewport = {
   themeColor: '#070B12',
@@ -41,7 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id">
       <body>
         <a className="skip" href="#main">Lewati ke konten utama</a>
-        <SiteShell>{children}</SiteShell>
+        <AuthProvider>
+          <SiteShell>{children}</SiteShell>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -4,7 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ShieldAlert, ArrowRight, Phone, LogOut, Menu, X, Check } from 'lucide-react';
+import { ShieldAlert, ArrowRight, Phone, LogOut, Menu, X, Check, User } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
 
 const mainLinks = [
   ['Asisten AI', '/asisten'],
@@ -22,6 +23,9 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   const [menu, setMenu] = useState(false);
   const [copiedBankScript, setCopiedBankScript] = useState(false);
   const quick = ['/lapor', '/lacak', '/insiden', '/kanal'].some((p) => path.startsWith(p));
+
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const [prevPath, setPrevPath] = useState(path);
   if (prevPath !== path) {
@@ -129,13 +133,60 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               <ShieldAlert size={15} />
               <span className="nav-btn-text">Darurat</span>
             </button>
-            <Link
-              className="btn ghost nav-btn-desktop-only"
-              href="/login"
-              style={{ padding: '7px 14px', fontSize: '0.82rem' }}
-            >
-              Masuk
-            </Link>
+
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} className="nav-btn-desktop-only">
+                <Link
+                  href="/dashboard"
+                  className="btn ghost"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.82rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    borderColor: 'rgba(0, 229, 255, 0.25)',
+                  }}
+                  title="Buka Dashboard Akun"
+                >
+                  <User size={14} style={{ color: '#00E5FF' }} />
+                  <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user.name || user.email?.split('@')[0]}
+                  </span>
+                  <span
+                    className="tag"
+                    style={{
+                      fontSize: '0.62rem',
+                      padding: '1px 5px',
+                      background: user.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 229, 255, 0.12)',
+                      color: user.role === 'ADMIN' ? '#EF4444' : '#00E5FF',
+                      borderColor: user.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(0, 229, 255, 0.25)',
+                    }}
+                  >
+                    {user.role || 'USER'}
+                  </span>
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="btn ghost"
+                  style={{ padding: '6px 10px', fontSize: '0.82rem', color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.25)' }}
+                  title="Keluar dari Akun (Logout)"
+                  aria-label="Keluar"
+                >
+                  <LogOut size={14} />
+                  <span>Keluar</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                className="btn ghost nav-btn-desktop-only"
+                href="/login"
+                style={{ padding: '7px 14px', fontSize: '0.82rem' }}
+              >
+                Masuk
+              </Link>
+            )}
+
             <Link
               className="btn nav-btn-desktop-only"
               href="/lapor"
@@ -200,23 +251,83 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             </div>
 
             <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <Link href="/dashboard" className="btn secondary" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
-                  Dashboard
-                </Link>
-                <Link href="/toolkit" className="btn ghost" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
-                  Cyber Toolkit
-                </Link>
-              </div>
+              {user ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      background: 'rgba(0, 229, 255, 0.05)',
+                      border: '1px solid rgba(0, 229, 255, 0.15)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.72rem', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Akun Masuk</span>
+                      <span
+                        className="tag"
+                        style={{
+                          fontSize: '0.62rem',
+                          padding: '1px 6px',
+                          background: user.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 229, 255, 0.12)',
+                          color: user.role === 'ADMIN' ? '#EF4444' : '#00E5FF',
+                          borderColor: user.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(0, 229, 255, 0.25)',
+                        }}
+                      >
+                        {user.role || 'USER'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 600, color: '#FFFFFF', marginTop: 3 }}>
+                      {user.name || 'Pengguna Lexora'}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748B' }}>
+                      {user.email}
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <Link href="/dashboard" className="btn secondary" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                      Dashboard
+                    </Link>
+                    <Link href="/profil" className="btn ghost" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                      Profil Saya
+                    </Link>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <button
+                      className="btn ghost"
+                      onClick={() => {
+                        setMenu(false);
+                        signOut({ callbackUrl: '/login' });
+                      }}
+                      style={{ fontSize: '0.85rem', color: '#EF4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                    >
+                      <LogOut size={14} /> Keluar (Logout)
+                    </button>
+                    <Link href="/lapor" className="btn" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                      Mulai Lapor →
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <Link href="/dashboard" className="btn secondary" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                      Dashboard
+                    </Link>
+                    <Link href="/toolkit" className="btn ghost" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                      Cyber Toolkit
+                    </Link>
+                  </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <Link href="/login" className="btn ghost" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
-                  Masuk Akun
-                </Link>
-                <Link href="/lapor" className="btn" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
-                  Mulai Lapor →
-                </Link>
-              </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <Link href="/login" className="btn ghost" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                      Masuk Akun
+                    </Link>
+                    <Link href="/lapor" className="btn" style={{ fontSize: '0.85rem' }} onClick={() => setMenu(false)}>
+                      Mulai Lapor →
+                    </Link>
+                  </div>
+                </div>
+              )}
 
               <button
                 className="btn danger"

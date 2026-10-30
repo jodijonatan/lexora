@@ -233,7 +233,25 @@ async function main() {
     },
   })
 
-  console.log('✅ Regulasi & Pasal UU PDP, UU ITE, PP, Perpres, SE OJK berhasil disiapkan.')
+  // Peraturan BSSN No. 8 Tahun 2020 (Sistem Pengamanan Informasi)
+  await db.regulation.upsert({
+    where: { code: 'Peraturan BSSN No. 8 Tahun 2020' },
+    update: {},
+    create: {
+      title: 'Peraturan Badan Siber dan Sandi Negara Nomor 8 Tahun 2020 tentang Sistem Pengamanan Informasi dalam Penyelenggaraan Sistem Elektronik',
+      code: 'Peraturan BSSN No. 8 Tahun 2020',
+      category: 'Peraturan Lembaga',
+      year: 2020,
+      description:
+        'Menetapkan standar teknis sistem manajemen keamanan informasi, tata kelola kerentanan, dan pedoman operasional tanggap insiden siber untuk PSE di Indonesia.',
+      sourceUrl: 'https://peraturan.go.id/id/peraturan-bssn-no-8-tahun-2020',
+      status: ContentStatus.PUBLISHED,
+      publishedAt: new Date('2020-12-07'),
+      reviewedById: legalReviewer.id,
+    },
+  })
+
+  console.log('✅ 6 Regulasi resmi (UU PDP, UU ITE, PP 71/2019, Perpres 28/2021, SE OJK 29/2022, Peraturan BSSN 8/2020) berhasil disiapkan.')
 
   // 3. Seed Incident Types
   const kebocoranDataIncidentType = await db.incidentType.upsert({
