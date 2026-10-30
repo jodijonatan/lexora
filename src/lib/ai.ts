@@ -1,17 +1,13 @@
-import OpenAI from 'openai'
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
 import { db } from '@/lib/db'
 
-let _client: OpenAI | null = null
+let _client: GoogleGenerativeAI | null = null
 
-function getClient(): OpenAI {
+function getClient(): GoogleGenerativeAI {
   if (!_client) {
-    const apiKey = process.env.LLM_API_KEY
-    if (!apiKey) throw new Error('LLM_API_KEY tidak dikonfigurasi.')
-
-    // baseURL opsional untuk provider non-OpenAI (OpenRouter, Groq, dll.)
-    // Default OpenAI SDK: https://api.openai.com/v1
-    const baseURL = process.env.LLM_BASE_URL || undefined
-    _client = new OpenAI({ apiKey, ...(baseURL ? { baseURL } : {}) })
+    const apiKey = process.env.GEMINI_API_KEY || process.env.LLM_API_KEY
+    if (!apiKey) throw new Error('GEMINI_API_KEY tidak dikonfigurasi di environment.')
+    _client = new GoogleGenerativeAI(apiKey)
   }
   return _client
 }
@@ -103,7 +99,7 @@ Gunakan konteks di atas sebagai sumber utama jawaban Anda. Sitasi harus sesuai d
 }
 
 /**
- * Panggil OpenAI API dengan konteks regulasi (RAG)
+ * Panggil Google Gemini API dengan konteks regulasi (RAG)
  */
 export async function generateAiAnswer(
   userMessage: string,
@@ -114,24 +110,36 @@ export async function generateAiAnswer(
   // Retrieve relevant articles dari database
   const relevantArticles = await retrieveRelevantArticles(userMessage)
 
-  // Bangun system prompt dengan konteks
+  // Bangun system prompt dengan konteks regulasi
   const systemPrompt = buildSystemPrompt(relevantArticles)
 
-  // Siapkan messages untuk OpenAI
-  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-    { role: 'system', content: systemPrompt },
-    ...conversationHistory.slice(-6), // Ambil 6 pesan terakhir untuk konteks
-    { role: 'user', content: userMessage },
-  ]
+  // Model dari env, default ke gemini-2.0-flash (cepat & hemat biaya)
+  const modelName = process.env.GEMINI_MODEL || process.env.LLM_MODEL || 'gemini-2.0-flash'
 
-  const completion = await client.chat.completions.create({
-    model: process.env.LLM_MODEL || 'gpt-4o-mini', // Dapat dari env, default cost-efficient
-    messages,
-    temperature: 0.3,
-    max_tokens: 1024,
+  const model = client.getGenerativeModel({
+    model: modelName,
+    systemInstruction: systemPrompt,
+    safetySettings: [
+      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+    ],
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: 1024,
+    },
   })
 
-  const answer = completion.choices[0]?.message?.content ?? 'Maaf, saya tidak dapat memproses pertanyaan Anda saat ini.'
+  // Bangun riwayat chat (Gemini menggunakan format 'user' | 'model')
+  const history = conversationHistory.slice(-6).map((msg) => ({
+    role: msg.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: msg.content }],
+  }))
+
+  const chat = model.startChat({ history })
+  const result = await chat.sendMessage(userMessage)
+  const answer = result.response.text() || 'Maaf, saya tidak dapat memproses pertanyaan Anda saat ini.'
 
   // Kumpulkan citation data
   const citedArticleIds = relevantArticles.map((a) => a.id)
