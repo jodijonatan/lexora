@@ -179,18 +179,18 @@ export default function Lapor() {
                 marginTop: 28,
                 alignItems: 'center',
                 gap: 28,
-                background: 'linear-gradient(135deg, rgba(14, 26, 42, 0.8) 0%, rgba(9, 16, 26, 0.95) 100%)',
-                border: '1px solid rgba(0, 229, 255, 0.3)',
-                borderRadius: 20,
-                padding: 'clamp(24px, 4vw, 44px)',
-                boxShadow: '0 12px 40px rgba(0, 229, 255, 0.12)',
+                background: 'var(--bg-panel)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 'clamp(20px, 3.5vw, 36px)',
+                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)',
               }}
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                  <Image src="/mascot/mascot-peace.png" alt="Lexo Sukses" width={64} height={64} />
+                  <Image src="/mascot/edu-01-celebration.webp" alt="Lexo Sukses" width={56} height={56} style={{ objectFit: 'contain' }} />
                   <div>
-                    <span className="tag" style={{ background: 'rgba(16, 185, 129, 0.15)', borderColor: '#10B981', color: '#10B981' }}>
+                    <span className="tag ok">
                       <CheckCircle2 size={13} style={{ display: 'inline', marginRight: 4 }} />
                       BERKAS TERDAFTAR LOKAL
                     </span>
@@ -279,7 +279,7 @@ export default function Lapor() {
           </div>
         )}
 
-        <div className="grid2" style={{ gridTemplateColumns: 'minmax(0, 1.7fr) minmax(280px, 1fr)', marginTop: 28, alignItems: 'start', gap: 28 }}>
+        <div className="wizard-grid">
           {/* Main Wizard Form */}
           <section className="panel" style={{ padding: 'clamp(20px, 3.5vw, 36px)' }}>
             <div className="stephead">
@@ -655,16 +655,16 @@ export default function Lapor() {
             <div
               className="panel"
               style={{
-                borderColor: 'rgba(0, 229, 255, 0.3)',
-                background: 'linear-gradient(180deg, rgba(14, 26, 42, 0.9) 0%, rgba(9, 16, 26, 0.95) 100%)',
+                borderColor: 'var(--border)',
+                background: 'var(--bg-panel)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
                 <Image
-                  src="/mascot/mascot-law.png"
+                  src="/mascot/cht-03-citation.webp"
                   alt="Lexo Asisten Hukum"
-                  width={68}
-                  height={68}
+                  width={60}
+                  height={60}
                   style={{ objectFit: 'contain' }}
                 />
                 <div>

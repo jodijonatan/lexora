@@ -143,7 +143,7 @@ export default function Lacak() {
                   ))}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94A3B8' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'clamp(0.66rem, 1.8vw, 0.75rem)', color: '#94A3B8', gap: 2 }}>
                   {['Diterima', 'Ditinjau', 'Siap Lapor', 'Dilaporkan', 'Selesai'].map((s) => (
                     <span key={s}>{s}</span>
                   ))}

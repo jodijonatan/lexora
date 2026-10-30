@@ -15,13 +15,12 @@ export default function Error({
       <div
         className="panel"
         style={{
-          maxWidth: 580,
+          maxWidth: 540,
           textAlign: 'center',
-          padding: '48px 32px',
-          background: 'linear-gradient(135deg, rgba(20, 24, 36, 0.85) 0%, rgba(10, 14, 22, 0.95) 100%)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: 20,
-          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
+          padding: '44px 28px',
+          borderColor: 'rgba(239, 68, 68, 0.28)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>

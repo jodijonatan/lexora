@@ -64,150 +64,246 @@ const advisories = [
 export default function Home() {
   return (
     <>
-      {/* Hero Section */}
-      <section style={{ padding: '36px 0 48px', position: 'relative', overflow: 'hidden' }}>
-        <div className="container">
+      {/* Hero Section — full viewport height, Z-pattern */}
+      <section
+        style={{
+          minHeight: 'calc(100vh - 66px)',
+          display: 'flex',
+          alignItems: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+          padding: '80px 0',
+        }}
+      >
+        {/* Background ambient glows */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}
+        >
           <div
-            className="grid2"
             style={{
-              alignItems: 'center',
-              gap: 36,
-              background: 'linear-gradient(135deg, rgba(16, 28, 46, 0.75) 0%, rgba(8, 14, 24, 0.9) 100%)',
-              border: '1px solid rgba(0, 229, 255, 0.25)',
-              borderRadius: 20,
-              padding: 'clamp(28px, 5vw, 56px)',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-              position: 'relative',
+              position: 'absolute',
+              top: '-10%',
+              right: '-5%',
+              width: 600,
+              height: 600,
+              background: 'radial-gradient(circle, rgba(0, 229, 255, 0.1) 0%, transparent 65%)',
+              filter: 'blur(60px)',
             }}
-          >
-            {/* Ambient Glow */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '-20%',
-                right: '10%',
-                width: 380,
-                height: 380,
-                background: 'radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, transparent 70%)',
-                filter: 'blur(50px)',
-                pointerEvents: 'none',
-              }}
-            />
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '10%',
+              left: '-8%',
+              width: 400,
+              height: 400,
+              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.07) 0%, transparent 65%)',
+              filter: 'blur(60px)',
+            }}
+          />
+        </div>
 
-            <div>
-              <div className="label" style={{ marginBottom: 14 }}>
-                <Sparkles size={14} style={{ color: '#00E5FF' }} />
-                PENDAMPING HUKUM SIBER BERBASIS AI · UINIC 8.0
-              </div>
-
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="hero-grid">
+            {/* LEFT: Copy */}
+            <div className="hero-copy">
+              {/* Headline */}
               <h1
                 style={{
-                  fontSize: 'clamp(2.3rem, 4.8vw, 4.2rem)',
+                  fontSize: 'clamp(2.3rem, 5.2vw, 4.4rem)',
                   lineHeight: 1.08,
-                  letterSpacing: '-0.035em',
+                  letterSpacing: '-0.04em',
                   fontWeight: 900,
-                  margin: '0 0 18px',
+                  margin: '0 0 22px',
                   color: '#FFFFFF',
                 }}
               >
-                Ubah Bahasa Hukum Rumit Menjadi <br />
+                Ubah Bahasa<br />
+                Hukum Rumit<br />
+                Menjadi{' '}
                 <span
                   style={{
-                    background: 'linear-gradient(90deg, #00E5FF 0%, #38BDF8 60%, #FFFFFF 100%)',
+                    background: 'linear-gradient(90deg, #00E5FF 0%, #38BDF8 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    display: 'inline-block',
                   }}
                 >
-                  Langkah Aksi Nyata.
+                  Aksi Nyata.
                 </span>
               </h1>
 
-              <p style={{ maxWidth: 540, fontSize: '1.05rem', color: '#CBD5E1', lineHeight: 1.7, margin: '0 0 24px' }}>
-                Lexora adalah platform edukasi dan pendampingan hukum siber cerdas. Menghubungkan regulasi resmi (UU PDP & UU ITE) ke dalam checklist praktis, draf surat resmi, dan panduan tanggap insiden untuk masyarakat dan UMKM.
+              {/* Sub-copy */}
+              <p
+                style={{
+                  fontSize: 'clamp(0.95rem, 2vw, 1.05rem)',
+                  color: '#94A3B8',
+                  lineHeight: 1.75,
+                  margin: '0 0 20px',
+                  maxWidth: 520,
+                }}
+              >
+                Platform edukasi dan pendampingan hukum siber berbasis AI. Dari regulasi resmi UU PDP &amp; UU ITE ke checklist praktis, draf surat, dan panduan tanggap insiden — dalam hitungan menit.
+              </p>
+              <p
+                style={{
+                  fontSize: 'clamp(0.88rem, 1.8vw, 0.95rem)',
+                  color: '#64748B',
+                  lineHeight: 1.75,
+                  margin: '0 0 32px',
+                  maxWidth: 480,
+                }}
+              >
+                Dirancang untuk masyarakat dan UMKM yang tidak punya latar belakang hukum — Lexora menerjemahkan pasal demi pasal menjadi langkah nyata yang bisa langsung dieksekusi.
               </p>
 
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
-                <Link className="btn" href="/asisten" style={{ padding: '12px 24px', fontSize: '1rem' }}>
-                  Konsultasi AI Bersitasi <ArrowRight size={18} />
+              {/* CTAs */}
+              <div className="hero-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 36 }}>
+                <Link className="btn" href="/asisten" style={{ padding: '12px 24px', fontSize: '0.96rem' }}>
+                  Konsultasi AI Bersitasi <ArrowRight size={17} />
                 </Link>
-                <Link className="btn secondary" href="/checklist" style={{ padding: '12px 20px', fontSize: '1rem' }}>
+                <Link className="btn secondary" href="/checklist" style={{ padding: '12px 20px', fontSize: '0.96rem' }}>
                   Checklist Kepatuhan
                 </Link>
-                <Link className="btn ghost" href="/lapor" style={{ padding: '12px 18px', fontSize: '1rem' }}>
+                <Link className="btn ghost" href="/lapor" style={{ padding: '12px 18px', fontSize: '0.96rem' }}>
                   Lapor Cepat
                 </Link>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 22, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: '#94A3B8' }}>
-                  <CheckCircle2 size={15} style={{ color: '#00E5FF' }} /> Rujukan Otentik UU PDP & ITE
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: '#94A3B8' }}>
-                  <CheckCircle2 size={15} style={{ color: '#00E5FF' }} /> Generator Surat Legal Siap Cetak
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: '#94A3B8' }}>
-                  <CheckCircle2 size={15} style={{ color: '#00E5FF' }} /> 100% Data Aman & Privat
-                </div>
-              </div>
-            </div>
-
-            {/* Right Hero: Mascot Lexo (GEN-01 Waving) & Quick Action Card */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {/* Mascot Greeting Speech Bubble (GEN-01 Welcome / Waving) */}
+              {/* Social proof / trust badges */}
               <div
+                className="hero-trust"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 18,
-                  background: 'rgba(11, 22, 36, 0.85)',
-                  border: '1px solid rgba(0, 229, 255, 0.35)',
-                  borderRadius: 16,
-                  padding: '20px 24px',
-                  boxShadow: '0 8px 30px rgba(0, 229, 255, 0.15)',
+                  paddingTop: 24,
+                  borderTop: '1px solid rgba(255,255,255,0.07)',
+                  flexWrap: 'wrap',
                 }}
               >
-                <div style={{ flexShrink: 0 }}>
-                  <Image
-                    src="/mascot/gen-01-welcome.webp"
-                    alt="Lexo - Maskot Waving / Welcome"
-                    width={95}
-                    height={95}
-                    className="animate-float"
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.84rem', color: '#64748B' }}>
+                  <CheckCircle2 size={14} style={{ color: '#00E5FF', flexShrink: 0 }} />
+                  Rujukan Otentik UU PDP &amp; ITE
                 </div>
-                <div>
-                  <div className="label" style={{ marginBottom: 4 }}>
-                    HAI, SAYA LEXO! · MASKOT RESMI LEXORA
-                  </div>
-                  <p style={{ margin: 0, fontSize: '0.95rem', color: '#E2E8F0', lineHeight: 1.5 }}>
-                    &ldquo;Jangan panik menghadapi masalah siber atau kepatuhan UU PDP. Saya akan temani membedah pasal dan menyusun langkah penyelamatan.&rdquo;
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.84rem', color: '#64748B' }}>
+                  <CheckCircle2 size={14} style={{ color: '#00E5FF', flexShrink: 0 }} />
+                  Surat Legal Siap Cetak
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: '0.84rem', color: '#64748B' }}>
+                  <CheckCircle2 size={14} style={{ color: '#00E5FF', flexShrink: 0 }} />
+                  100% Data Privat
                 </div>
               </div>
+            </div>
 
-              {/* Quick Action Card: Tenggat 3x24 Jam UU PDP */}
-              <div className="panel" style={{ borderColor: 'rgba(239, 68, 68, 0.4)', background: 'rgba(17, 24, 38, 0.9)' }}>
-                <div className="label" style={{ color: '#EF4444', marginBottom: 8 }}>
-                  <AlertTriangle size={14} style={{ display: 'inline', marginRight: 4 }} />
-                  TANGGAP DARURAT · PASAL 46 UU PDP
-                </div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0 0 8px', color: '#FFFFFF' }}>
-                  Usaha / Website Mengalami Kebocoran Data?
-                </h3>
-                <p style={{ fontSize: '0.88rem', color: '#CBD5E1', lineHeight: 1.6, margin: '0 0 14px' }}>
-                  UU PDP mewajibkan pemberitahuan tertulis maksimal <strong>3 x 24 jam (72 jam)</strong> kepada subjek data & lembaga resmi.
-                </p>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <Link className="btn danger" href="/dokumen/pemberitahuan-kegagalan-pdp" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
-                    Buat Surat 3x24 Jam →
-                  </Link>
-                  <Link className="btn secondary" href="/checklist/kebocoran-data-pdp" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
-                    SOP Mitigasi
-                  </Link>
-                </div>
+            {/* RIGHT: Responsive Mascot visual with orbit badges on desktop & clean grid on mobile */}
+            <div className="hero-mascot-wrapper">
+              <div className="hero-mascot-circle">
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle at 50% 40%, rgba(0, 229, 255, 0.13) 0%, transparent 65%)',
+                    pointerEvents: 'none',
+                  }}
+                />
+
+                <Image
+                  src="/mascot/gen-01-welcome.webp"
+                  alt="Lexo - Asisten Hukum AI"
+                  width={560}
+                  height={560}
+                  className="animate-float"
+                  style={{ width: '92%', height: '92%', objectFit: 'contain', position: 'relative', zIndex: 1 }}
+                  priority
+                />
+
+                {/* Desktop Orbit Badges */}
+                {[
+                  { top: '14.6%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6+', sub: 'Modul Regulasi' },
+                  { top: '14.6%', left: '85.4%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'dot', title: 'UU PDP No. 27/2022', sub: 'Aktif · Per Jan 2025' },
+                  { top: '85.4%', left: '85.4%', border: 'rgba(239,68,68,0.45)', bg: 'rgba(30,10,10,0.95)', icon: 'alert', title: 'Tenggat 72 Jam', sub: 'Kebocoran data wajib lapor' },
+                  { top: '85.4%', left: '14.6%', border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'bot', title: 'AI Bersitasi Pasal', sub: 'RAG · Sumber terverifikasi' },
+                ].map((b, i) => (
+                  <div
+                    key={i}
+                    className="hero-orbit-badge"
+                    style={{
+                      position: 'absolute',
+                      top: b.top,
+                      left: b.left,
+                      transform: 'translate(-50%, -50%)',
+                      background: b.bg,
+                      border: `1px solid ${b.border}`,
+                      borderRadius: 14,
+                      padding: '10px 16px',
+                      backdropFilter: 'blur(12px)',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                      zIndex: 10,
+                      alignItems: 'center',
+                      gap: 8,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {b.icon === 'dot' && (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 8px rgba(0,229,255,0.8)', flexShrink: 0 }} />
+                    )}
+                    {b.icon === 'alert' && <AlertTriangle size={18} style={{ color: '#EF4444', flexShrink: 0 }} />}
+                    {b.icon === 'bot' && <Bot size={16} style={{ color: '#00E5FF', flexShrink: 0 }} />}
+                    <div>
+                      {b.big ? (
+                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FFF', lineHeight: 1, letterSpacing: '-0.04em' }}>{b.big}</div>
+                      ) : (
+                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFF', lineHeight: 1.2 }}>{b.title}</div>
+                      )}
+                      <div style={{ fontSize: '0.68rem', color: '#94A3B8', marginTop: 2 }}>{b.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile Badges Grid (Shown cleanly below mascot on <= 900px, avoiding viewport overflow) */}
+              <div className="hero-mobile-badges">
+                {[
+                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', big: '6+', sub: 'Modul Regulasi Terintegrasi' },
+                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'dot', title: 'UU PDP No. 27/2022', sub: 'Aktif · Per Jan 2025' },
+                  { border: 'rgba(239,68,68,0.45)', bg: 'rgba(30,10,10,0.95)', icon: 'alert', title: 'Tenggat 72 Jam', sub: 'Kebocoran data wajib lapor' },
+                  { border: 'rgba(0,229,255,0.3)', bg: 'rgba(10,20,34,0.95)', icon: 'bot', title: 'AI Bersitasi Pasal', sub: 'RAG · Sumber terverifikasi' },
+                ].map((b, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: b.bg,
+                      border: `1px solid ${b.border}`,
+                      borderRadius: 12,
+                      padding: '12px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      textAlign: 'left',
+                    }}
+                  >
+                    {b.icon === 'dot' && (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E5FF', boxShadow: '0 0 8px rgba(0,229,255,0.8)', flexShrink: 0 }} />
+                    )}
+                    {b.icon === 'alert' && <AlertTriangle size={18} style={{ color: '#EF4444', flexShrink: 0 }} />}
+                    {b.icon === 'bot' && <Bot size={16} style={{ color: '#00E5FF', flexShrink: 0 }} />}
+                    <div>
+                      {b.big ? (
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#FFF', lineHeight: 1 }}>{b.big}</div>
+                      ) : (
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#FFF', lineHeight: 1.2 }}>{b.title}</div>
+                      )}
+                      <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: 2 }}>{b.sub}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -409,24 +505,26 @@ export default function Home() {
               gap: 20,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-              <Image
-                src="/mascot/cht-03-citation.webp"
-                alt="Lexo - Rujukan Resmi Hukum"
-                width={70}
-                height={70}
-                style={{ objectFit: 'contain' }}
-              />
-              <div>
-                <strong style={{ color: '#FFFFFF', fontSize: '1.05rem', display: 'block' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', flex: '1 1 280px' }}>
+              <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+                <Image
+                  src="/mascot/cht-03-citation.webp"
+                  alt="Lexo - Rujukan Resmi Hukum"
+                  width={64}
+                  height={64}
+                  style={{ objectFit: 'contain' }}
+                />
+              </div>
+              <div style={{ flex: '1 1 220px' }}>
+                <strong style={{ color: '#FFFFFF', fontSize: '1.05rem', display: 'block', marginBottom: 2 }}>
                   Pahami Hak Digital Anda Berdasarkan Regulasi Resmi
                 </strong>
-                <span className="muted" style={{ fontSize: '0.9rem' }}>
+                <span className="muted" style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>
                   Pelajari UU No. 27/2022 (UU PDP) dan UU No. 1/2024 (UU ITE) lengkap dengan pasal, ayat, dan ringkasan bahasa awam.
                 </span>
               </div>
             </div>
-            <Link href="/regulations" className="btn" style={{ fontSize: '0.9rem', padding: '10px 22px' }}>
+            <Link href="/regulations" className="btn" style={{ fontSize: '0.9rem', padding: '10px 22px', whiteSpace: 'nowrap' }}>
               Buka Basis Regulasi →
             </Link>
           </div>
